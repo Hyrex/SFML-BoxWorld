@@ -95,6 +95,7 @@ public:
 	
 	std::unique_ptr<SFML::RectangleShape> DebugForward;
 
+
 private:
 
 	void Construct(Application* Package, b2World* WorldContext, const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, SFML::Vector2f Size = SFML::Vector2f(1, 1), SFML::Vector2f Location = SFML::Vector2f(0, 0), const float Rotation = 0.0f, const bool bIsDynamicBody = false, const bool bGenerateOverlaps = false, const bool bAutoActivate = true);

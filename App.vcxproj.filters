@@ -50,6 +50,9 @@
     <ClInclude Include="Source\Public\GameState.h">
       <Filter>Source\Public</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Public\Character.h">
+      <Filter>Source\Public</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Private\Application.cpp">
@@ -76,38 +79,13 @@
     <ClCompile Include="Source\Private\GameState.cpp">
       <Filter>Source\Private</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Private\Character.cpp">
+      <Filter>Source\Private</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Font Include="Resources\04b03.ttf">
       <Filter>Resources</Filter>
     </Font>
-    <Font Include="Resources\RightChalk.ttf">
-      <Filter>Resources</Filter>
-    </Font>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="Resources\Background.jpg">
-      <Filter>Resources</Filter>
-    </Image>
-    <Image Include="Resources\basketBall.png">
-      <Filter>Resources</Filter>
-    </Image>
-    <Image Include="Resources\basketBallBoard.png">
-      <Filter>Resources</Filter>
-    </Image>
-    <Image Include="Resources\boxAlt.png">
-      <Filter>Resources</Filter>
-    </Image>
-    <Image Include="Resources\chalkboard.jpg">
-      <Filter>Resources</Filter>
-    </Image>
-    <Image Include="Resources\wood.jpg">
-      <Filter>Resources</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\Mr.ogg">
-      <Filter>Resources</Filter>
-    </None>
   </ItemGroup>
 </Project>

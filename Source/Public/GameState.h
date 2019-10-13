@@ -13,8 +13,6 @@ public:
 	
 	FGameState();
 	void ResetValues();
-	void ChargeProjectionVelocity();
-	void DischargeProjectionVelocity();
 	bool BindApplication(Application* Object);
 	virtual void Tick() override;
 
@@ -40,7 +38,7 @@ public:
 	std::string GetReqBallString()			const	{ std::ostringstream ss; (ss << RequiredBallCount);  return ss.str(); }
 	std::string GetScoreString()			const	{ std::ostringstream ss; (ss << Score);  return ss.str(); }
 	std::string GetHiScoreString()			const	{ std::ostringstream ss; (ss << HiScore);  return ss.str(); }
-	std::string GetRemainingTimeString()	const	{ std::ostringstream ss; (ss << (int)CountdownTime);  return ss.str(); }
+
 	std::string GetElapsedTimeMinString()	const	{ std::ostringstream ss; (ss << (int)(TotalSurvivedTime / 60.0f));  return ss.str(); }
 	std::string GetElapsedTimeSecondString()const   { std::ostringstream ss; (ss << ((int)TotalSurvivedTime)%60);  return ss.str(); }
 

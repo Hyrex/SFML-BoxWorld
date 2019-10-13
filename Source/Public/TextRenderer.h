@@ -37,6 +37,12 @@ public:
 	}
 };
 
+class FTextEffect
+{
+	//static void LocationLerp();
+	//static void ColorLerp();
+};
+
 class FTextRenderer : public ITickable
 {
 public:

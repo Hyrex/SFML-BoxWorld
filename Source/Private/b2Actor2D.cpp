@@ -1,6 +1,6 @@
 #include "b2Actor2D.h"
 #include "Application.h"
-
+#include "AssetLoader.h"
 
 b2Actor2D::b2Actor2D(Application* Package, b2World* WorldContext, const std::string Name, EActorShapeType ShapeType, const Eb2ShapeType BodyType, SFML::Vector2f Size, SFML::Vector2f Location, const float Rotation, const bool bIsDynamicBody, const bool bGenerateOverlaps, const bool bAutoActivate)
 {
@@ -72,9 +72,11 @@ void b2Actor2D::Construct(Application * Package, b2World * WorldContext, const s
 	}
 
 	// Debug!
+	const SFML::Vector2f DebugArrowSize = DEBUG_ARROW_SIZE * 0.25f;
 	DebugForward = std::make_unique<SFML::RectangleShape>();
-	DebugForward->setOrigin(Size * 0.5f);
-	DebugForward->setSize(SFML::Vector2f(Size.x + 20.0f, 5));
+	DebugForward->setTexture(FAssetLoader::FindTexture(&Package->GetAssetLoader(), RESOURCES_TEXTURE_DEBUG_ARROW));
+	DebugForward->setOrigin(SFML::Vector2f(0, +DebugArrowSize.y/2));
+	DebugForward->setSize(DebugArrowSize);
 	DebugForward->setFillColor(SFML::Color(255, 0, 0, 255));
 
 }

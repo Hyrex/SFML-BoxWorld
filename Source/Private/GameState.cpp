@@ -23,16 +23,6 @@ void FGameState::ResetValues()
 	RestartTimer = 3.0f;
 }
 
-void FGameState::ChargeProjectionVelocity()
-{
-	BallVelocity = (BallVelocity <= 60.0f) ? BallVelocity + (DELTA_TIME_STEP * 5.0f) : 60.0f;
-}
-
-void FGameState::DischargeProjectionVelocity()
-{
-	BallVelocity = (BallVelocity >= 5.0f) ? BallVelocity - (DELTA_TIME_STEP * 5.0f) : 5.0f;
-}
-
 bool FGameState::BindApplication(Application * Object)
 {
 	ContextObject = Object;
