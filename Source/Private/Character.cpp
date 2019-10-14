@@ -10,22 +10,20 @@ Character::~Character()
 {
 }
 
-void Character::Initialize(Application* App)
+void Character::Initialize()
 {
 	if (bInitialized)
 		return;
 
 	// Construct data to parse.
 	Fb2ActorSpawnParam SpawnParam;
-	SpawnParam.Package = App;
-	SpawnParam.WorldContext = App->GetWorld();
 	SpawnParam.Name = "Box";
 	SpawnParam.ShapeType = EActorShapeType::EST_Rectangle;
 	SpawnParam.BodyType = Eb2ShapeType::ECT_Polygon;
 	SpawnParam.Size = SFML::Vector2f(32, 32);
 	
 	SFML::View ViewPort;
-	App->GetWindow()->getViewport(ViewPort);
+	Application::GetInstance()->GetWindow()->getViewport(ViewPort);
 	
 	SpawnParam.Location = ViewPort.getSize() / 2.0f;
 	SpawnParam.Rotation = 0.0f;

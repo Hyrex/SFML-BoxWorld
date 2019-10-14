@@ -6,6 +6,8 @@
 #include "b2Actor2DContactListener.h"
 #include "TextManager.h"
 
+Application*  Application::Instance = nullptr;
+
 Application::Application()
 {
 	b2ActorContactListner = std::make_unique<b2Actor2DContactListener>();
@@ -15,7 +17,20 @@ Application::Application()
 	World->SetContactListener(b2ActorContactListner.get());
 }
 
-Application::~Application() {}
+Application::~Application()
+{
+	delete Instance;
+}
+
+Application* Application::GetInstance()
+{
+	if (!Instance)
+	{
+		Instance = new Application();
+	}
+
+	return Instance;
+}
 
 void Application::BeginPlay()
 {
@@ -23,92 +38,77 @@ void Application::BeginPlay()
 	{
 		TickHandle.BeginTick();
 	}
-
-	EndPlay();
 }
 
-int Application::Initialize()
+void Application::Initialize()
 {
-	// Reduce the code length, scope in this function only.
-	using namespace sf;
-	using namespace std;
+	//if (BGM = FAssetLoader::FindMusic(RESOURCES_AUDIO_TROLOLO))
+	//{
+	//	BGM->setVolume(0);
+	//	BGM->setLoop(true);
+	//	BGM->play();
+	//}
 
-	bool bInitChecks = true;
-	bInitChecks &= TickHandle.BindApplication(this);
-	bInitChecks &= GameState.BindApplication(this);
+	// Window creation
+	AppWindow.create(RenderWindowData.GetVideoModeFromData(), RenderWindowData.GetWindowName());
+	AppWindow.setVerticalSyncEnabled(true);
+	AppWindow.setActive();
+	AppWindow.setMouseCursorVisible(false);
 
-	if (bInitChecks)
+	// Border creations
+	const float BorderThickness = 16.0f;
+	const float ViewportX = (float)RenderWindowData.Width;
+	const float ViewportY = (float)RenderWindowData.Height;
+	const SFML::Vector2f XBorder(ViewportX, BorderThickness);
+	const SFML::Vector2f YBorder(BorderThickness, ViewportY);
+	const SFML::Vector2f UBorderLocation(ViewportX * 0.5f, BorderThickness * 0.5f);
+	const SFML::Vector2f DBorderLocation(ViewportX * 0.5f, ViewportY - BorderThickness * 0.5f);
+	const SFML::Vector2f LBorderLocation(BorderThickness * 0.5f, ViewportY * 0.5f);
+	const SFML::Vector2f RBorderLocation(ViewportX - BorderThickness * 0.5f, ViewportY * 0.5f);
+
+	// Collapsed function body. Transferring ownership of local unique ptr to the container
+	auto b2ActorInit = [this](std::unique_ptr<b2Actor2D>& p, const SFML::Color c) ->void 
 	{
-		//if (BGM = FAssetLoader::FindMusic(RESOURCES_AUDIO_TROLOLO))
-		//{
-		//	BGM->setVolume(0);
-		//	BGM->setLoop(true);
-		//	BGM->play();
-		//}
+		p->GetShape()->setOutlineThickness(-1);
+		p->GetShape()->setOutlineColor(SFML::Color::Black);
+		p->GetShape()->setFillColor(c);
+		b2Actors.push_back(move(p));
+	};
 
-		// Window creation
-		AppWindow.create(RenderWindowData.GetVideoModeFromData(), RenderWindowData.GetWindowName());
-		AppWindow.setVerticalSyncEnabled(true);
-		AppWindow.setActive();
-		AppWindow.setMouseCursorVisible(false);
+	std::unique_ptr<b2Actor2D> TopBorder = std::make_unique<b2Actor2D>("TopBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, XBorder, UBorderLocation);
+	b2ActorInit(TopBorder, SFML::Color(100, 100, 100));
 
-		// Border creations
-		const float BorderThickness = 16.0f;
-		const float ViewportX = (float)RenderWindowData.Width;
-		const float ViewportY = (float)RenderWindowData.Height;
-		const Vector2f XBorder(ViewportX, BorderThickness);
-		const Vector2f YBorder(BorderThickness, ViewportY);
-		const Vector2f UBorderLocation(ViewportX * 0.5f						, BorderThickness * 0.5f);
-		const Vector2f DBorderLocation(ViewportX * 0.5f						, ViewportY - BorderThickness * 0.5f);
-		const Vector2f LBorderLocation(BorderThickness * 0.5f				, ViewportY * 0.5f ); 
-		const Vector2f RBorderLocation(ViewportX - BorderThickness * 0.5f	, ViewportY * 0.5f ); 
+	std::unique_ptr<b2Actor2D> LeftBorder = std::make_unique<b2Actor2D>("LeftBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, YBorder, LBorderLocation);
+	b2ActorInit(LeftBorder , SFML::Color(100, 100, 100) );
 
-		// Collapsed function body. Transferring ownership of local unique ptr to the container
-		auto b2ActorInit = [this](unique_ptr<b2Actor2D>& p, const Color c) ->void 
-		{
-			p->GetShape()->setOutlineThickness(-1);
-			p->GetShape()->setOutlineColor(Color::Black);
-			p->GetShape()->setFillColor(c);
-			b2Actors.push_back(move(p));
-		};
+	std::unique_ptr<b2Actor2D> RightBorder = std::make_unique<b2Actor2D>("RightBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, YBorder, RBorderLocation);
+	b2ActorInit(RightBorder, SFML::Color(100, 100, 100));
 
-		unique_ptr<b2Actor2D> TopBorder = make_unique<b2Actor2D>(this, World.get(), "TopBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, XBorder, UBorderLocation);
-		b2ActorInit(TopBorder, Color(100, 100, 100));
+	std::unique_ptr<b2Actor2D> BotBorder = std::make_unique<b2Actor2D>("BotBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, XBorder, DBorderLocation);
+	b2ActorInit(BotBorder, SFML::Color(100, 100, 100));
 
-		unique_ptr<b2Actor2D> LeftBorder = make_unique<b2Actor2D>(this, World.get(), "LeftBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, YBorder, LBorderLocation);
-		b2ActorInit(LeftBorder , Color(100, 100, 100) );
-
-		unique_ptr<b2Actor2D> RightBorder = make_unique<b2Actor2D>(this, World.get(), "RightBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, YBorder, RBorderLocation);
-		b2ActorInit(RightBorder,Color(100, 100, 100));
-
-		unique_ptr<b2Actor2D> BotBorder = make_unique<b2Actor2D>(this, World.get(), "BotBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, XBorder, DBorderLocation);
-		b2ActorInit(BotBorder, Color(100, 100, 100));
-
-		for (int i = 0; i < 2; i++)
-		{
-			AngleIndicators[i].color = (i == 1) ? Color::Cyan : Color::Blue;
-		}
-		
-		// Board
-		const float offsetX = ViewportX * 0.98f;
-		const float offsetY = ViewportY * 0.35f;
-		const Vector2f boardSize(8.0f, 200.0f);
-		const Vector2f boardPos(ViewportX * 0.98f, ViewportY * 0.35f);
-
-		const Vector2f netEdgeSize(8.0f, 90.0f);
-		const Vector2f netEdgePos(offsetX - 48.0f + (netEdgeSize.y / 2 * sin(-0.174533f)), offsetY + 16.0f);
-	
-		const Vector2f sensorSize(48.0f, 48.0f);
-		const Vector2f sensorPos((boardPos.x + netEdgePos.x) / 2, netEdgePos.y);
-		
-		unique_ptr<b2Actor2D> ScoreSensor = make_unique<b2Actor2D>(this, World.get(), "sensor", EActorShapeType::EST_Circle, Eb2ShapeType::ECT_Circle, sensorSize, sensorPos, 0.0f, false, true);
-		ScoreSensor->BindOnBeginoverlap(SensorOverlap);
-		b2ActorInit(ScoreSensor, Color(255, 255, 0, 100));
-
-		SetupText();
+	for (int i = 0; i < 2; i++)
+	{
+		AngleIndicators[i].color = (i == 1) ? SFML::Color::Cyan : SFML::Color::Blue;
 	}
+		
+	// Board
+	const float offsetX = ViewportX * 0.98f;
+	const float offsetY = ViewportY * 0.35f;
+	const SFML::Vector2f boardSize(8.0f, 200.0f);
+	const SFML::Vector2f boardPos(ViewportX * 0.98f, ViewportY * 0.35f);
+	
+	const SFML::Vector2f netEdgeSize(8.0f, 90.0f);
+	const SFML::Vector2f netEdgePos(offsetX - 48.0f + (netEdgeSize.y / 2 * sin(-0.174533f)), offsetY + 16.0f);
 
-	return bInitChecks;
+	const SFML::Vector2f sensorSize(48.0f, 48.0f);
+	const SFML::Vector2f sensorPos((boardPos.x + netEdgePos.x) / 2, netEdgePos.y);
+		
+	std::unique_ptr<b2Actor2D> ScoreSensor = std::make_unique<b2Actor2D>("sensor", EActorShapeType::EST_Circle, Eb2ShapeType::ECT_Circle, sensorSize, sensorPos, 0.0f, false, true);
+	ScoreSensor->BindOnBeginoverlap(SensorOverlap);
+	b2ActorInit(ScoreSensor, SFML::Color(255, 255, 0, 100));
+
+	SetupText();
 }
 
 void Application::Tick(const float DeltaTime)
@@ -185,7 +185,6 @@ void Application::Tick(const float DeltaTime)
 			bMiddleMousePressed = true;
 
 			GameState.ResetGame();
-			TickHandle.ClearTimer();
 			StartGameTranslateOut->Reset();
 			StartGameAlphaFadeOut->Reset();
 		}
@@ -233,11 +232,6 @@ void Application::Tick(const float DeltaTime)
 
 	AppWindow.draw(AngleIndicators, 2, SFML::Lines);
 	AppWindow.display();
-}
-
-void Application::EndPlay()
-{
-	TickHandle.EndTick();
 }
 
 void Application::SetupText()
@@ -298,20 +292,20 @@ void Application::BallTick(b2Actor2D* Actor)
 {
 	/// this code was to mark inactive, no longer in need to pool anything.
 	if (!Actor) return;
-	if (!Actor->GetPackage()->GameState.IsGameStarted()) return;
+	if (!Application::GetInstance()->GameState.IsGameStarted()) return;
 
-	const bool Ax = Actor->GetLocation().x >= Actor->GetPackage()->RenderWindowData.Width + 64.0f;
+	const bool Ax = Actor->GetLocation().x >= Application::GetInstance()->RenderWindowData.Width + 64.0f;
 	const bool Bx = Actor->GetLocation().x <= -64.0f;
-	const bool Ay = Actor->GetLocation().y >= Actor->GetPackage()->RenderWindowData.Height + 64.0f;
+	const bool Ay = Actor->GetLocation().y >= Application::GetInstance()->RenderWindowData.Height + 64.0f;
 	const bool By = Actor->GetLocation().y <= -64.0f;
 }
 
 void Application::SensorOverlap(b2Actor2D* OverlapActor)
 {
-	if (!OverlapActor->GetPackage()->GameState.IsGameStarted()) return;
+	if (!Application::GetInstance()->GameState.IsGameStarted()) return;
 
 	if (OverlapActor->GetObjectName() == "Ball")
 	{
-		//OverlapActor->GetPackage()->GameState.ScoreBall();
+	
 	}
 }

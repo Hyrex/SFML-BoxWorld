@@ -16,7 +16,6 @@ public:
 	virtual void Tick() override;
 
 	void ResetValues();
-	bool BindApplication(Application* Object);
 
 	void StartGame();
 	void ResetGame();
@@ -49,7 +48,6 @@ private:
 	float TotalSurvivedTime;
 	
 	float RestartTimer = 3.0f;
-	Application* ContextObject;
 
 	std::unique_ptr<Character> Player;
 };

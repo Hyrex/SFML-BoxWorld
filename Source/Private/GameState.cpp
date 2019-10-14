@@ -9,7 +9,7 @@ FGameState::FGameState()
 
 std::string FGameState::GetMouseLocationString() const
 {
-	SFML::Vector2f v = SFML::Vector2f(SFML::Mouse::getPosition(*ContextObject->GetWindow()));
+	SFML::Vector2f v = SFML::Vector2f(SFML::Mouse::getPosition(*Application::GetInstance()->GetWindow()));
 	float x = v.x; float y = v.y;
 	std::ostringstream ss; ss << x << "," << y; return ss.str();
 }
@@ -64,12 +64,6 @@ void FGameState::ResetValues()
 	RestartTimer = 3.0f;
 }
 
-bool FGameState::BindApplication(Application * Object)
-{
-	ContextObject = Object;
-	return ContextObject != nullptr;
-}
-
 void FGameState::Tick()
 {
 	if (bIsGameStarted)
@@ -102,7 +96,7 @@ void FGameState::StartGame()
 	if (!bIsGameStarted)
 		bIsGameStarted = true;
 
-	Player->Initialize(ContextObject);
+	Player->Initialize();
 }
 
 void FGameState::ResetGame()

@@ -2,14 +2,14 @@
 #include "Application.h"
 #include "AssetLoader.h"
 
-b2Actor2D::b2Actor2D(Application* Package, b2World* WorldContext, const std::string Name, EActorShapeType ShapeType, const Eb2ShapeType BodyType, SFML::Vector2f Size, SFML::Vector2f Location, const float Rotation, const bool bIsDynamicBody, const bool bGenerateOverlaps, const bool bAutoActivate)
+b2Actor2D::b2Actor2D(const std::string Name, EActorShapeType ShapeType, const Eb2ShapeType BodyType, SFML::Vector2f Size, SFML::Vector2f Location, const float Rotation, const bool bIsDynamicBody, const bool bGenerateOverlaps, const bool bAutoActivate)
 {
-	Construct(Package, WorldContext, Name, ShapeType, BodyType, Size, Location, Rotation, bIsDynamicBody, bGenerateOverlaps, bAutoActivate);
+	Construct(Name, ShapeType, BodyType, Size, Location, Rotation, bIsDynamicBody, bGenerateOverlaps, bAutoActivate);
 }
 
 b2Actor2D::b2Actor2D(const Fb2ActorSpawnParam SpawnParam)
 {	
-	Construct(SpawnParam.Package, SpawnParam.WorldContext, SpawnParam.Name, SpawnParam.ShapeType, SpawnParam.BodyType, 
+	Construct(SpawnParam.Name, SpawnParam.ShapeType, SpawnParam.BodyType, 
 		SpawnParam.Size, SpawnParam.Location, SpawnParam.Rotation, SpawnParam.bIsDynamicBody, SpawnParam.bGenerateOverlaps, SpawnParam.bAutoActivate);
 }
 
@@ -17,13 +17,8 @@ b2Actor2D::~b2Actor2D()
 {
 }
 
-void b2Actor2D::Construct(Application * Package, b2World * WorldContext, const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, SFML::Vector2f Size, SFML::Vector2f Location, const float Rotation, const bool bIsDynamicBody, const bool bGenerateOverlaps, const bool bAutoActivate)
+void b2Actor2D::Construct(const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, SFML::Vector2f Size, SFML::Vector2f Location, const float Rotation, const bool bIsDynamicBody, const bool bGenerateOverlaps, const bool bAutoActivate)
 {
-	if (!Package) return;
-	if (!WorldContext) return;
-
-	this->Package = Package;
-
 	ObjectName = Name;
 	ObjectShapes.ShapeType = ShapeType;
 	CollisionType = BodyType;
@@ -59,7 +54,7 @@ void b2Actor2D::Construct(Application * Package, b2World * WorldContext, const s
 		FixtureDefinition->isSensor = bGenerateOverlaps; // change it to MakeSensor and get data.
 	}
 
-	BodyInstance = WorldContext->CreateBody(BodyDefinition.get());
+	BodyInstance = Application::GetInstance()->GetWorld()->CreateBody(BodyDefinition.get());
 	BodyInstance->CreateFixture(FixtureDefinition.get());
 	BodyInstance->SetUserData(this);
 

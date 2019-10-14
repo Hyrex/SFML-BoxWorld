@@ -12,7 +12,7 @@ public:
 	virtual ~Character();
 	virtual void Tick() override;
 
-	void Initialize(Application* App);
+	void Initialize();
 	void MoveLeft();
 	void MoveRight();
 	void Jump();

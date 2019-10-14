@@ -28,13 +28,12 @@ struct FRenderWindowData
 class Application
 {
 public:
-	Application();
-	~Application();;
+	static Application* GetInstance();
+	~Application();
 
-	int Initialize();
+	void Initialize();
 	void BeginPlay();
 	void Tick(const float DeltaTime);
-	void EndPlay();
 
 	b2World* GetWorld() const { return World.get(); }
 	FTickHandle& GetTickHandle() { return TickHandle;  }
@@ -42,6 +41,7 @@ public:
 
 private:
 
+	Application();
 	static void BallTick(b2Actor2D* Actor);
 	static void SensorOverlap(b2Actor2D* OverlapActor);
 
@@ -82,4 +82,6 @@ private:
 	std::unique_ptr<FTextLerpAlphaEffect>			StartGameAlphaFadeOut = std::make_unique<FTextLerpAlphaEffect>();
 
 	std::unique_ptr<FText>							TimerText = std::make_unique<FText>();
+
+	static Application* Instance;
 };

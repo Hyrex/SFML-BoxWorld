@@ -3,12 +3,12 @@
 
 int main()
 {
-	std::unique_ptr<Application> Instance = std::make_unique<Application>(); 
+	//std::unique_ptr<Application> Instance = std::make_unique<Application>(); 
 	
-	if (Instance)
+	if (Application::GetInstance())
 	{
-		if(Instance->Initialize())
-			Instance->BeginPlay();
+		Application::GetInstance()->Initialize();
+		Application::GetInstance()->BeginPlay();
 	}
 	return 0;
 }

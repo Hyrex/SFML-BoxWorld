@@ -5,7 +5,6 @@
 #include "Interface.h"
 
 static const float PIXEL_PER_METER = 32.0f;
-class Application;
 
 enum EActorShapeType
 {
@@ -43,8 +42,6 @@ struct FShapeCollection
 
 struct Fb2ActorSpawnParam
 {
-	Application* Package;
-	b2World* WorldContext;
 	std::string Name;
 	EActorShapeType ShapeType;
 	Eb2ShapeType BodyType;
@@ -60,7 +57,7 @@ class b2Actor2D : public ITickable
 {
 public:
 
-	b2Actor2D(Application* Package, b2World* WorldContext, const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, SFML::Vector2f Size = SFML::Vector2f(1,1), SFML::Vector2f Location = SFML::Vector2f(0,0), const float Rotation = 0.0f, const bool bIsDynamicBody = false, const bool bGenerateOverlaps = false, const bool bAutoActivate = true);
+	b2Actor2D(const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, SFML::Vector2f Size = SFML::Vector2f(1,1), SFML::Vector2f Location = SFML::Vector2f(0,0), const float Rotation = 0.0f, const bool bIsDynamicBody = false, const bool bGenerateOverlaps = false, const bool bAutoActivate = true);
 	b2Actor2D(const Fb2ActorSpawnParam SpawnParam);
 	~b2Actor2D();
 
@@ -70,7 +67,6 @@ public:
 	b2FixtureDef*	GetFixtureDefinition()			{ if (FixtureDefinition) return FixtureDefinition.get(); else LOG("No BodyFixture"); return nullptr; }
 	
 	b2Body*			GetBodyInstance()				{ if (BodyInstance) return BodyInstance; else LOG("No BodyInstance"); return nullptr; }
-	Application*	GetPackage()			const	{ return Package; }
 	bool			IsDynamic()				const	{ return bIsDynamicObject; }
 	bool			IsActive()				const	{ return bIsActive; }
 
@@ -98,7 +94,7 @@ public:
 
 private:
 
-	void Construct(Application* Package, b2World* WorldContext, const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, SFML::Vector2f Size = SFML::Vector2f(1, 1), SFML::Vector2f Location = SFML::Vector2f(0, 0), const float Rotation = 0.0f, const bool bIsDynamicBody = false, const bool bGenerateOverlaps = false, const bool bAutoActivate = true);
+	void Construct(const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, SFML::Vector2f Size = SFML::Vector2f(1, 1), SFML::Vector2f Location = SFML::Vector2f(0, 0), const float Rotation = 0.0f, const bool bIsDynamicBody = false, const bool bGenerateOverlaps = false, const bool bAutoActivate = true);
 	void MakeShapeInstance(const EActorShapeType ShapeType);
 	void SetShapeProperties(const EActorShapeType ShapeType, SFML::Vector2f Size);
 	void MakeB2ShapeInstance(const Eb2ShapeType BodyType);
@@ -123,9 +119,6 @@ private:
 	/////////////////////////////////
 	//		Cache
 	/////////////////////////////////
-
-	/** Reference only, doesn't own object.*/
-	Application* Package;
 
 	/** Reference only, doesn't own object.*/
 	SFML::Shape* ObjectShapeCache;
