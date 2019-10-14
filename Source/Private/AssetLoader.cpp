@@ -1,5 +1,18 @@
 #include "AssetLoader.h"
 
+FAssetLoader*  FAssetLoader::Instance = nullptr;
+
+FAssetLoader* FAssetLoader::GetInstance()
+{
+	if (!Instance)
+	{
+		Instance = new FAssetLoader();
+		Instance->LoadResources();
+	}
+
+	return Instance;
+}
+
 FAssetLoader::~FAssetLoader() 
 {
 	for (auto& i : MusicLibrary)
@@ -7,6 +20,8 @@ FAssetLoader::~FAssetLoader()
 		if (!i.second.get()) continue;
 			i.second.get()->stop();
 	}
+
+	delete Instance;
 }
 
 bool FAssetLoader::LoadResources()
@@ -17,28 +32,22 @@ bool FAssetLoader::LoadResources()
 	return bResult;
 }
 
-SFML::Texture* FAssetLoader::FindTexture(FAssetLoader* ContextObject, const std::string Name)
+SFML::Texture* FAssetLoader::GetTexture(const std::string Name)
 {
-	if (!ContextObject) return nullptr;
-
-	auto Iterator = ContextObject->TextureLibrary.find(Name);
-	return (Iterator != ContextObject->TextureLibrary.end()) ? Iterator->second.get() : nullptr ;
+	auto Iterator = GetInstance()->TextureLibrary.find(Name);
+	return (Iterator != GetInstance()->TextureLibrary.end()) ? Iterator->second.get() : nullptr ;
 }
 
-SFML::Font* FAssetLoader::FindFont(FAssetLoader* ContextObject, const std::string Name)
+SFML::Font* FAssetLoader::GetFont(const std::string Name)
 {
-	if (!ContextObject) return nullptr;
-
-	auto Iterator = ContextObject->FontLibrary.find(Name);
-	return (Iterator != ContextObject->FontLibrary.end()) ? Iterator->second.get() : nullptr;
+	auto Iterator = GetInstance()->FontLibrary.find(Name);
+	return (Iterator != GetInstance()->FontLibrary.end()) ? Iterator->second.get() : nullptr;
 }
 
-SFML::Music* FAssetLoader::FindMusic(FAssetLoader* ContextObject, const std::string Name)
+SFML::Music* FAssetLoader::GetMusic(const std::string Name)
 {
-	if (!ContextObject) return nullptr;
-
-	auto Iterator = ContextObject->MusicLibrary.find(Name);
-	return (Iterator != ContextObject->MusicLibrary.end()) ? Iterator->second.get() : nullptr;
+	auto Iterator = GetInstance()->MusicLibrary.find(Name);
+	return (Iterator != GetInstance()->MusicLibrary.end()) ? Iterator->second.get() : nullptr;
 }
 
 bool FAssetLoader::LoadTexture(const std::string FileName)

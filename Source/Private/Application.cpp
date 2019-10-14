@@ -38,11 +38,10 @@ int Application::Initialize()
 	bInitChecks &= TickHandle.BindApplication(this);
 	bInitChecks &= GameState.BindApplication(this);
 	bInitChecks &= TextRenderer.BindApplication(this);
-	bInitChecks &= AssetLoader.LoadResources();
 
 	if (bInitChecks)
 	{
-		//if (BGM = FAssetLoader::FindMusic(&AssetLoader, RESOURCES_AUDIO_TROLOLO))
+		//if (BGM = FAssetLoader::FindMusic(RESOURCES_AUDIO_TROLOLO))
 		//{
 		//	BGM->setVolume(0);
 		//	BGM->setLoop(true);
@@ -265,7 +264,7 @@ void Application::SetupText()
 	std::unique_ptr<FTextData> t1 = std::make_unique<FTextData>();
 	t1->StartLocation = SFML::Vector2f(80, LineY1);
 	t1->Text.setCharacterSize(TEXT_SIZE_M);
-	t1->Font = FAssetLoader::FindFont(&AssetLoader, RESOURCES_FONT_PIXEL);
+	t1->Font = FAssetLoader::GetInstance()->GetFont(RESOURCES_FONT_PIXEL);
 	t1->Init();
 	LevelTextCache = t1.get();
 	TextRenderer.Add(t1);
@@ -273,7 +272,7 @@ void Application::SetupText()
 	std::unique_ptr<FTextData> t2 = std::make_unique<FTextData>();
 	t2->StartLocation = SFML::Vector2f(80, LineY2);
 	t2->Text.setCharacterSize(TEXT_SIZE_M);
-	t2->Font = FAssetLoader::FindFont(&AssetLoader, RESOURCES_FONT_PIXEL);
+	t2->Font = FAssetLoader::GetInstance()->GetFont(RESOURCES_FONT_PIXEL);
 	t2->Init();
 	ScoreCache = t2.get();
 	TextRenderer.Add(t2);
@@ -281,7 +280,7 @@ void Application::SetupText()
 	std::unique_ptr<FTextData> t3 = std::make_unique<FTextData>();
 	t3->StartLocation = SFML::Vector2f(768, LineY1);
 	t3->Text.setCharacterSize(TEXT_SIZE_M);
-	t3->Font = FAssetLoader::FindFont(&AssetLoader, RESOURCES_FONT_PIXEL);
+	t3->Font = FAssetLoader::GetInstance()->GetFont(RESOURCES_FONT_PIXEL);
 	t3->Init();
 	HiScoreCache = t3.get();
 	TextRenderer.Add(t3);
@@ -290,7 +289,7 @@ void Application::SetupText()
 	std::unique_ptr<FTextData> t6 = std::make_unique<FTextData>();
 	t6->StartLocation = SFML::Vector2f(368, LineY2);
 	t6->Text.setCharacterSize(TEXT_SIZE_M);
-	t6->Font = FAssetLoader::FindFont(&AssetLoader, RESOURCES_FONT_PIXEL);
+	t6->Font = FAssetLoader::GetInstance()->GetFont(RESOURCES_FONT_PIXEL);
 	t6->Init();
 	ElapsedTimeCache = t6.get();
 	TextRenderer.Add(t6);
@@ -303,7 +302,7 @@ void Application::SetupText()
 	t7->FadeTime = 1.0f;
 	t7->Text.setCharacterSize(TEXT_SIZE_M);
 	t7->TextData = "SPACE TO START!";
-	t7->Font = FAssetLoader::FindFont(&AssetLoader, RESOURCES_FONT_PIXEL);
+	t7->Font = FAssetLoader::GetInstance()->GetFont(RESOURCES_FONT_PIXEL);
 	t7->bIsPaused = true;
 	t7->Init();
 	CenterTextCache = t7.get();

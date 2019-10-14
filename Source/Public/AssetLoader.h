@@ -7,14 +7,19 @@
 class FAssetLoader
 {
 public:
-	FAssetLoader() {};
-	~FAssetLoader();;
+
+	static FAssetLoader* GetInstance();
+
+	~FAssetLoader();
 	bool LoadResources();
-	static SFML::Texture*	FindTexture(FAssetLoader* ContextObject, const std::string Name);
-	static SFML::Font*		FindFont(FAssetLoader* ContextObject, const std::string Name);
-	static SFML::Music*		FindMusic(FAssetLoader* ContextObject, const std::string Name);
+	static SFML::Texture*	GetTexture(const std::string Name);
+	static SFML::Font*		GetFont(const std::string Name);
+	static SFML::Music*		GetMusic(const std::string Name);
 	
 private:
+
+
+	FAssetLoader() {};
 	std::map<const std::string, std::unique_ptr<SFML::Texture>> TextureLibrary;
 	std::map<const std::string, std::unique_ptr<SFML::Font>>	FontLibrary;
 	std::map<const std::string, std::unique_ptr<SFML::Music>>	MusicLibrary;
@@ -23,5 +28,6 @@ private:
 	bool LoadFont(const std::string FileName);
 	bool LoadMusic(const std::string FileName);
 
+	static FAssetLoader* Instance;
 };
 

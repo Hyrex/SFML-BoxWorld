@@ -38,7 +38,6 @@ public:
 
 	b2World* GetWorld() const { return World.get(); }
 	FTickHandle& GetTickHandle() { return TickHandle;  }
-	FAssetLoader& GetAssetLoader() { return AssetLoader; }
 	SFML::RenderWindow* GetWindow() { return &AppWindow; }
 
 private:
@@ -49,7 +48,6 @@ private:
 	void SetupText();
 
 	FTickHandle TickHandle;
-	FAssetLoader AssetLoader;
 	FGameState GameState;
 	FTextRenderer TextRenderer;
 

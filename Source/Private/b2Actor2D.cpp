@@ -74,7 +74,7 @@ void b2Actor2D::Construct(Application * Package, b2World * WorldContext, const s
 	// Debug!
 	const SFML::Vector2f DebugArrowSize = DEBUG_ARROW_SIZE * 0.25f;
 	DebugForward = std::make_unique<SFML::RectangleShape>();
-	DebugForward->setTexture(FAssetLoader::FindTexture(&Package->GetAssetLoader(), RESOURCES_TEXTURE_DEBUG_ARROW));
+	DebugForward->setTexture(FAssetLoader::GetInstance()->GetTexture(RESOURCES_TEXTURE_DEBUG_ARROW));
 	DebugForward->setOrigin(SFML::Vector2f(0, +DebugArrowSize.y/2));
 	DebugForward->setSize(DebugArrowSize);
 	DebugForward->setFillColor(SFML::Color(255, 0, 0, 255));
