@@ -106,6 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Box2D-master\Box2D;C:\Box2D-master;C:\SFML-2.5.1-64-bit\include;$(ProjectDir)Source\Public;$(ProjectDir)Source\Private;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG_GAME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>C:\SFML-2.5.1-64-bit\lib;$(ProjectDir)bin;$(ProjectDir)Box2D\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -155,7 +156,9 @@
     <ClInclude Include="Source\Public\Defines.h" />
     <ClInclude Include="Source\Public\GameState.h" />
     <ClInclude Include="Source\Public\Interface.h" />
-    <ClInclude Include="Source\Public\TextRenderer.h" />
+    <ClInclude Include="Source\Public\Text.h" />
+    <ClInclude Include="Source\Public\TextEffect.h" />
+    <ClInclude Include="Source\Public\TextManager.h" />
     <ClInclude Include="Source\Public\TickHandle.h" />
   </ItemGroup>
   <ItemGroup>
@@ -166,7 +169,9 @@
     <ClCompile Include="Source\Private\Character.cpp" />
     <ClCompile Include="Source\Private\GameState.cpp" />
     <ClCompile Include="Source\Private\main.cpp" />
-    <ClCompile Include="Source\Private\TextRenderer.cpp" />
+    <ClCompile Include="Source\Private\Text.cpp" />
+    <ClCompile Include="Source\Private\TextEffect.cpp" />
+    <ClCompile Include="Source\Private\TextManager.cpp" />
     <ClCompile Include="Source\Private\TickHandle.cpp" />
   </ItemGroup>
   <ItemGroup>

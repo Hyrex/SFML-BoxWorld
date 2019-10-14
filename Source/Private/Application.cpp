@@ -4,6 +4,7 @@
 #include "Character.h"
 #include "b2Actor2D.h"
 #include "b2Actor2DContactListener.h"
+#include "TextManager.h"
 
 Application::Application()
 {
@@ -12,8 +13,6 @@ Application::Application()
 	Gravity = b2Vec2(0.f, 9.81f);
 	World = std::make_shared<b2World>(Gravity);
 	World->SetContactListener(b2ActorContactListner.get());
-
-	Player = std::make_unique<Character>();
 }
 
 Application::~Application() {}
@@ -37,7 +36,6 @@ int Application::Initialize()
 	bool bInitChecks = true;
 	bInitChecks &= TickHandle.BindApplication(this);
 	bInitChecks &= GameState.BindApplication(this);
-	bInitChecks &= TextRenderer.BindApplication(this);
 
 	if (bInitChecks)
 	{
@@ -54,8 +52,6 @@ int Application::Initialize()
 		AppWindow.setActive();
 		AppWindow.setMouseCursorVisible(false);
 
-		
-
 		// Border creations
 		const float BorderThickness = 16.0f;
 		const float ViewportX = (float)RenderWindowData.Width;
@@ -67,7 +63,7 @@ int Application::Initialize()
 		const Vector2f LBorderLocation(BorderThickness * 0.5f				, ViewportY * 0.5f ); 
 		const Vector2f RBorderLocation(ViewportX - BorderThickness * 0.5f	, ViewportY * 0.5f ); 
 
-		// Collapsed function body. Transfering ownership of local unique ptr to the container
+		// Collapsed function body. Transferring ownership of local unique ptr to the container
 		auto b2ActorInit = [this](unique_ptr<b2Actor2D>& p, const Color c) ->void 
 		{
 			p->GetShape()->setOutlineThickness(-1);
@@ -85,10 +81,8 @@ int Application::Initialize()
 		unique_ptr<b2Actor2D> RightBorder = make_unique<b2Actor2D>(this, World.get(), "RightBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, YBorder, RBorderLocation);
 		b2ActorInit(RightBorder,Color(100, 100, 100));
 
-#if 1 // debug floor!
 		unique_ptr<b2Actor2D> BotBorder = make_unique<b2Actor2D>(this, World.get(), "BotBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, XBorder, DBorderLocation);
 		b2ActorInit(BotBorder, Color(100, 100, 100));
-#endif 
 
 		for (int i = 0; i < 2; i++)
 		{
@@ -112,7 +106,6 @@ int Application::Initialize()
 		b2ActorInit(ScoreSensor, Color(255, 255, 0, 100));
 
 		SetupText();
-		Player->Spawn(this);
 	}
 
 	return bInitChecks;
@@ -137,26 +130,22 @@ void Application::Tick(const float DeltaTime)
 	for (auto& i : b2Actors)
 		if (i) i->Tick();
 
-	Player->Tick();
-	
-	// Need to update on tick.
-	LevelTextCache->Text.setString("LEVEL\n" + GameState.GetLevelString());
-	ScoreCache->Text.setString("SCORE\n" + GameState.GetScoreString());
-	HiScoreCache->Text.setString("HISCORE\n" + GameState.GetHiScoreString());
-	ElapsedTimeCache->Text.setString("ELAPSED MIN\n" + GameState.GetElapsedTimeMinString() + " M" + GameState.GetElapsedTimeSecondString() + " S");
-	
+	// Dynamic Text 
+	TimerText->SetText(GameState.GetFormattedElapsedTimeString());
+	PositionDataText->SetText(GameState.GetMouseLocationString());
+	PositionDataText->Text.setPosition(SFML::Vector2f(SFML::Mouse::getPosition(AppWindow)));
+		
 	if (SFML::Keyboard::isKeyPressed(SFML::Keyboard::Space))
 	{
-		if (!GameState.GetIsGameStarted())
+		if (!GameState.IsGameStarted())
 		{
 			GameState.StartGame();
-			CenterTextCache->bIsPaused = false;
+			StartGameTranslateOut->Begin();
+			StartGameAlphaFadeOut->Begin();
 		}
 		else
 		{
-			
-			Player->b2Actor->GetBodyInstance()->ApplyLinearImpulse(b2Vec2(-0, -1), Player->b2Actor->GetBodyInstance()->GetPosition(), true);
-
+			GameState.GetPlayer()->Jump();
 		}
 	}
 	else if (SFML::Keyboard::isKeyPressed(SFML::Keyboard::Escape))
@@ -165,20 +154,18 @@ void Application::Tick(const float DeltaTime)
 	}
 	else if (SFML::Keyboard::isKeyPressed(SFML::Keyboard::A)) //Joy stick plz!
 	{
-		Player->b2Actor->GetBodyInstance()->ApplyLinearImpulse(b2Vec2(-1,0), Player->b2Actor->GetBodyInstance()->GetPosition(), true);
-
+		GameState.GetPlayer()->MoveLeft();
 	}
 	else if (SFML::Keyboard::isKeyPressed(SFML::Keyboard::D))
 	{
-		Player->b2Actor->GetBodyInstance()->ApplyLinearImpulse(b2Vec2(+1, 0), Player->b2Actor->GetBodyInstance()->GetPosition(), true);
+		GameState.GetPlayer()->MoveRight();
 	}
-
-	// Right Click to Spawn Ball.
+	
 	if (SFML::Mouse::isButtonPressed(SFML::Mouse::Right))
 	{
 		if (!bRightMousePressed)
 		{
-			if (!GameState.GetIsGameOver() && GameState.GetIsGameStarted())
+			if (!GameState.IsGameOver() && GameState.IsGameStarted())
 			{
 				
 			}
@@ -199,9 +186,8 @@ void Application::Tick(const float DeltaTime)
 
 			GameState.ResetGame();
 			TickHandle.ClearTimer();
-			CenterTextCache->Init();
-			CenterTextCache->bIsActive = true;
-			CenterTextCache->bIsPaused = true;
+			StartGameTranslateOut->Reset();
+			StartGameAlphaFadeOut->Reset();
 		}
 	}
 	else
@@ -224,27 +210,25 @@ void Application::Tick(const float DeltaTime)
 	AngleIndicators[0].position = SFML::Vector2f(0.0f,0.0f);
 	AngleIndicators[1].position = SFML::Vector2f(SFML::Mouse::getPosition(AppWindow));
 
-
 	// Rendering
 	AppWindow.clear(SFML::Color::Black);
-
-
 
 	for (auto& Itr : RenderShapes)
 		AppWindow.draw(*Itr);
 
-
 	for (auto& Itr : b2Actors)
 		AppWindow.draw(*Itr->GetShape());
 
-	AppWindow.draw(*Player->b2Actor->GetShape());
-	AppWindow.draw(*Player->b2Actor->DebugForward);
-
-
-	for (auto& Itr : TextRenderer.GetTextData())
+	if (GameState.GetPlayer()->IsInitialized())
 	{
-		if(Itr->bIsActive)
-			AppWindow.draw(Itr->Text);
+		AppWindow.draw(*GameState.GetPlayer()->Getb2Actor()->GetShape());
+		AppWindow.draw(*GameState.GetPlayer()->Getb2Actor()->DebugForward);
+	}
+
+	for (auto& Itr : TextRenderer.GetTextEffectBundles())
+	{
+		if(Itr.TargetText->IsVisible())
+			AppWindow.draw(Itr.TargetText->Text);
 	}
 
 	AppWindow.draw(AngleIndicators, 2, SFML::Lines);
@@ -258,62 +242,63 @@ void Application::EndPlay()
 
 void Application::SetupText()
 {
-	const float Unit = 32.0f;
-	const float LineY1 = 530;
-	const float LineY2 = 620;
-	std::unique_ptr<FTextData> t1 = std::make_unique<FTextData>();
-	t1->StartLocation = SFML::Vector2f(80, LineY1);
-	t1->Text.setCharacterSize(TEXT_SIZE_M);
-	t1->Font = FAssetLoader::GetInstance()->GetFont(RESOURCES_FONT_PIXEL);
-	t1->Init();
-	LevelTextCache = t1.get();
-	TextRenderer.Add(t1);
-
-	std::unique_ptr<FTextData> t2 = std::make_unique<FTextData>();
-	t2->StartLocation = SFML::Vector2f(80, LineY2);
-	t2->Text.setCharacterSize(TEXT_SIZE_M);
-	t2->Font = FAssetLoader::GetInstance()->GetFont(RESOURCES_FONT_PIXEL);
-	t2->Init();
-	ScoreCache = t2.get();
-	TextRenderer.Add(t2);
-
-	std::unique_ptr<FTextData> t3 = std::make_unique<FTextData>();
-	t3->StartLocation = SFML::Vector2f(768, LineY1);
-	t3->Text.setCharacterSize(TEXT_SIZE_M);
-	t3->Font = FAssetLoader::GetInstance()->GetFont(RESOURCES_FONT_PIXEL);
-	t3->Init();
-	HiScoreCache = t3.get();
-	TextRenderer.Add(t3);
-
-
-	std::unique_ptr<FTextData> t6 = std::make_unique<FTextData>();
-	t6->StartLocation = SFML::Vector2f(368, LineY2);
-	t6->Text.setCharacterSize(TEXT_SIZE_M);
-	t6->Font = FAssetLoader::GetInstance()->GetFont(RESOURCES_FONT_PIXEL);
-	t6->Init();
-	ElapsedTimeCache = t6.get();
-	TextRenderer.Add(t6);
-
 	const float ViewportX = (float)RenderWindowData.Width;
 	const float ViewportY = (float)RenderWindowData.Height;
-	std::unique_ptr<FTextData> t7 = std::make_unique<FTextData>(); // middle
-	t7->StartLocation = SFML::Vector2f(ViewportX/2, ViewportY/2);
-	t7->EndLocation = SFML::Vector2f(ViewportX / 2, -16);
-	t7->FadeTime = 1.0f;
-	t7->Text.setCharacterSize(TEXT_SIZE_M);
-	t7->TextData = "SPACE TO START!";
-	t7->Font = FAssetLoader::GetInstance()->GetFont(RESOURCES_FONT_PIXEL);
-	t7->bIsPaused = true;
-	t7->Init();
-	CenterTextCache = t7.get();
-	TextRenderer.Add(t7);
+
+	// Static String Texts
+	TimerText->Text.setPosition(SFML::Vector2f(32.0f, ViewportY - 64.0f));
+	TimerText->SetFont(FAssetLoader::GetInstance()->GetFont(RESOURCES_FONT_PIXEL));
+
+	TranslateTestText->SetText("TestTranslate");
+	TranslateTestText->Text.setPosition(SFML::Vector2f(ViewportX / 2, ViewportY / 2));
+
+	StartGameText->SetText("Press [Space] to Start");
+	StartGameText->Text.setPosition(SFML::Vector2f(ViewportX / 2, ViewportY / 2));
+
+	// Effects
+	FlashPositionEffect->SetAlpha(0.2f, 0.8f);
+	FlashPositionEffect->SetFadeTime(2.5f);
+	FlashPositionEffect->Begin();
+
+	PingPongEffect->SetDuration(1.0f);
+	PingPongEffect->SetStartLocation(SFML::Vector2f(0.0f, 0.0f));
+	PingPongEffect->SetEndLocation(SFML::Vector2f(ViewportX / 2, ViewportY / 2));
+	PingPongEffect->Begin();
+
+	StartGameTranslateOut->SetDuration(3.0f);
+	StartGameTranslateOut->SetStartLocation(StartGameText->Text.getPosition());
+	StartGameTranslateOut->SetEndLocation(StartGameText->Text.getPosition() + SFML::Vector2f(0, -500.0f));
+
+	StartGameAlphaFadeOut->SetFadeTime(2.0f);
+	StartGameAlphaFadeOut->SetAlpha(1.0f, 0.0f);
+
+	FTextEffectBundle e1;
+	e1.TargetText = PositionDataText.get();
+	e1.Effects.push_back(FlashPositionEffect.get());
+	TextRenderer.Add(e1);
+
+	FTextEffectBundle e2;
+	e2.TargetText = TranslateTestText.get();
+	e2.Effects.push_back(PingPongEffect.get());
+	e2.Effects.push_back(FlashPositionEffect.get());
+	TextRenderer.Add(e2);
+	
+	FTextEffectBundle e3;
+	e3.TargetText = StartGameText.get();
+	e3.Effects.push_back(StartGameTranslateOut.get());
+	e3.Effects.push_back(StartGameAlphaFadeOut.get());
+	TextRenderer.Add(e3);
+
+	FTextEffectBundle e4;
+	e4.TargetText = TimerText.get();
+	TextRenderer.Add(e4);
 }
 
 void Application::BallTick(b2Actor2D* Actor)
 {
 	/// this code was to mark inactive, no longer in need to pool anything.
 	if (!Actor) return;
-	if (!Actor->GetPackage()->GameState.GetIsGameStarted()) return;
+	if (!Actor->GetPackage()->GameState.IsGameStarted()) return;
 
 	const bool Ax = Actor->GetLocation().x >= Actor->GetPackage()->RenderWindowData.Width + 64.0f;
 	const bool Bx = Actor->GetLocation().x <= -64.0f;
@@ -323,10 +308,10 @@ void Application::BallTick(b2Actor2D* Actor)
 
 void Application::SensorOverlap(b2Actor2D* OverlapActor)
 {
-	if (!OverlapActor->GetPackage()->GameState.GetIsGameStarted()) return;
+	if (!OverlapActor->GetPackage()->GameState.IsGameStarted()) return;
 
 	if (OverlapActor->GetObjectName() == "Ball")
 	{
-		OverlapActor->GetPackage()->GameState.ScoreBall();
+		//OverlapActor->GetPackage()->GameState.ScoreBall();
 	}
 }

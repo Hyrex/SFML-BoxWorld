@@ -41,9 +41,6 @@
     <ClInclude Include="Source\Public\b2Actor2D.h">
       <Filter>Source\Public\GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Public\TextRenderer.h">
-      <Filter>Source\Public</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Public\Interface.h">
       <Filter>Source\Public</Filter>
     </ClInclude>
@@ -51,6 +48,15 @@
       <Filter>Source\Public</Filter>
     </ClInclude>
     <ClInclude Include="Source\Public\Character.h">
+      <Filter>Source\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Public\TextManager.h">
+      <Filter>Source\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Public\Text.h">
+      <Filter>Source\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Public\TextEffect.h">
       <Filter>Source\Public</Filter>
     </ClInclude>
   </ItemGroup>
@@ -73,13 +79,19 @@
     <ClCompile Include="Source\Private\b2Actor2DContactListener.cpp">
       <Filter>Source\Private\GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Private\TextRenderer.cpp">
-      <Filter>Source\Private</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Private\GameState.cpp">
       <Filter>Source\Private</Filter>
     </ClCompile>
     <ClCompile Include="Source\Private\Character.cpp">
+      <Filter>Source\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Private\TextManager.cpp">
+      <Filter>Source\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Private\Text.cpp">
+      <Filter>Source\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Private\TextEffect.cpp">
       <Filter>Source\Private</Filter>
     </ClCompile>
   </ItemGroup>

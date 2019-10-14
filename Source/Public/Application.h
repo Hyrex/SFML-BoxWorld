@@ -3,13 +3,13 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <Box2D/Box2D.h>
+
 #include "TickHandle.h"
 #include "AssetLoader.h"
 #include "GameState.h"
-#include "TextRenderer.h"
+#include "TextManager.h"
 #include "Defines.h"
 
-class Character;
 class b2Actor2D;
 class b2Actor2DContactListener;
 
@@ -49,7 +49,7 @@ private:
 
 	FTickHandle TickHandle;
 	FGameState GameState;
-	FTextRenderer TextRenderer;
+	FTextManager TextRenderer;
 
 	FRenderWindowData RenderWindowData;
 	SFML::RenderWindow AppWindow;
@@ -69,17 +69,17 @@ private:
 	bool bRightMousePressed = false;
 	bool bMiddleMousePressed = false;
 
+#if DEBUG_GAME
+	std::unique_ptr<FText>							PositionDataText = std::make_unique<FText>();
+	std::unique_ptr<FTextFlashEffect>				FlashPositionEffect = std::make_unique<FTextFlashEffect>();
 
-	//////////////////////////////////////////
-	//		Cached Pointers
-	//////////////////////////////////////////
+	std::unique_ptr<FText>							TranslateTestText = std::make_unique<FText>();
+	std::unique_ptr<FTextPingPongTranslationEffect>	PingPongEffect = std::make_unique<FTextPingPongTranslationEffect>();
+#endif
 
-	FTextData* LevelTextCache;
-	FTextData* ScoreCache;
-	FTextData* HiScoreCache;
-	FTextData* ElapsedTimeCache;
-	FTextData* CenterTextCache;
+	std::unique_ptr<FText>							StartGameText = std::make_unique<FText>();
+	std::unique_ptr<FTextLerpLocationEffect>		StartGameTranslateOut = std::make_unique<FTextLerpLocationEffect>();
+	std::unique_ptr<FTextLerpAlphaEffect>			StartGameAlphaFadeOut = std::make_unique<FTextLerpAlphaEffect>();
 
-	std::unique_ptr<Character> Player;
-
+	std::unique_ptr<FText>							TimerText = std::make_unique<FText>();
 };

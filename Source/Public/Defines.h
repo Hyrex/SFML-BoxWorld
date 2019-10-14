@@ -27,8 +27,13 @@
 #define DEBUG_ARROW_SIZE					SFML::Vector2f(100.0f,43.f)
 
 // Resources Path Defines.
-#define RESOURCES_TEXTURE_DEBUG_ARROW		"Resources/debug_arrow.png"
+
+#define RESOURCES_FONT_DEFAULT				"Resources/arial.ttf"
 #define RESOURCES_FONT_PIXEL				"Resources/04b03.ttf"
+#define RESOURCES_FONT_MOLOT				"Resources/Molot.otf"
+
+#define RESOURCES_TEXTURE_DEBUG_ARROW		"Resources/debug_arrow.png"
+
 #define RESOURCES_TEXTURE_CHALKBOARD		"Resources/chalkboard.jpg"
 
 

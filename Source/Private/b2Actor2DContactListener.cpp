@@ -12,7 +12,6 @@ b2Actor2DContactListener::~b2Actor2DContactListener()
 }
 
 
-
 void b2Actor2DContactListener::BeginContact(b2Contact* Contact)
 {
 	void* BodyUserDataA = Contact->GetFixtureA()->GetBody()->GetUserData();

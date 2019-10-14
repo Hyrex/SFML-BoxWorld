@@ -3,23 +3,64 @@
 
 FGameState::FGameState()
 {
+	Player = std::make_unique<Character>();
 	ResetValues();
+}
+
+std::string FGameState::GetMouseLocationString() const
+{
+	SFML::Vector2f v = SFML::Vector2f(SFML::Mouse::getPosition(*ContextObject->GetWindow()));
+	float x = v.x; float y = v.y;
+	std::ostringstream ss; ss << x << "," << y; return ss.str();
+}
+
+std::string FGameState::GetLevelString() const
+{
+	std::ostringstream ss; 
+	(ss << Level);  
+	return ss.str();
+}
+
+std::string FGameState::GetScoreString() const
+{
+	std::ostringstream ss; 
+	(ss << Score);  
+	return ss.str();
+}
+
+std::string FGameState::GetElapsedTimeMinString() const
+{
+	std::ostringstream ss; 
+	(ss << (int)(TotalSurvivedTime / 60.0f));  
+	return ss.str();
+}
+
+std::string FGameState::GetElapsedTimeSecondString() const
+{
+	std::ostringstream ss; 
+	(ss << ((int)TotalSurvivedTime) % 60);  
+	return ss.str();
+}
+
+std::string FGameState::GetFormattedElapsedTimeString() const
+{
+	return "ELAPSED MIN\n" + GetElapsedTimeMinString() + " M" + GetElapsedTimeSecondString() + " S";
+}
+
+Character* FGameState::GetPlayer()
+{
+	return Player.get();
 }
 
 void FGameState::ResetValues()
 {
 	Score = 0;
-	HiScore = 0;
 	Level = 1;
-	RequiredBallCount = GetRequirementBallCount(Level); 
-	AdditionalTime = GetTimeIncreament(RequiredBallCount); 
-	CountdownTime = AdditionalTime;
-	TotalSurvivedTime = 0.0f;
 
 	bIsGameStarted = false;
 	bIsGameOver = false;
 	bIsLevelUp = false;
-	BallVelocity = 5.0f;
+
 	RestartTimer = 3.0f;
 }
 
@@ -33,17 +74,9 @@ void FGameState::Tick()
 {
 	if (bIsGameStarted)
 	{
-		// Update scores
-		if (Score >= HiScore)
-			HiScore = Score;
-
 		// Check Level up
-		if (RequiredBallCount <= 0)
+		if (false)
 		{
-			Level += 1;
-			RequiredBallCount = GetRequirementBallCount(Level);
-			AdditionalTime = GetTimeIncreament(RequiredBallCount);
-			CountdownTime += AdditionalTime;
 			bIsLevelUp = true;
 		}
 		else
@@ -52,15 +85,15 @@ void FGameState::Tick()
 		}
 
 		// Check GameOver
-		bIsGameOver = (CountdownTime <= 0);
+		bIsGameOver = false;
 		if (bIsGameOver)
 			RestartTimer -= DELTA_TIME_STEP;
 
 		if (RestartTimer < 0.0f)
 			ResetValues();
 
-		CountdownTime -= DELTA_TIME_STEP;
 		TotalSurvivedTime += DELTA_TIME_STEP;
+		Player->Tick();
 	}
 }
 
@@ -68,20 +101,12 @@ void FGameState::StartGame()
 {
 	if (!bIsGameStarted)
 		bIsGameStarted = true;
+
+	Player->Initialize(ContextObject);
 }
 
 void FGameState::ResetGame()
 {
 	bIsGameStarted = false;
 	ResetValues();
-}
-
-float FGameState::GetTimeIncreament(const int BallCount)
-{
-	return (BallCount * 8.0f);
-}
-
-int FGameState::GetRequirementBallCount(const int CurrentLevel)
-{
-	return (CurrentLevel * 5);
 }

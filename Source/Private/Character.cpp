@@ -10,9 +10,9 @@ Character::~Character()
 {
 }
 
-void Character::Spawn(Application* App)
+void Character::Initialize(Application* App)
 {
-	if (bSpawned)
+	if (bInitialized)
 		return;
 
 	// Construct data to parse.
@@ -50,7 +50,22 @@ void Character::Spawn(Application* App)
 
 	b2Actor->GetBodyInstance()->SetMassData(&data);
 	//b2Actor->BindOnTick(BallTick);
-	bSpawned = true;
+	bInitialized = true;
+}
+
+void Character::MoveLeft()
+{
+	b2Actor->GetBodyInstance()->ApplyLinearImpulse(b2Vec2(-1, 0), b2Actor->GetBodyInstance()->GetPosition(), true);
+}
+
+void Character::MoveRight()
+{
+	b2Actor->GetBodyInstance()->ApplyLinearImpulse(b2Vec2(+1, 0),b2Actor->GetBodyInstance()->GetPosition(), true);
+}
+
+void Character::Jump()
+{
+	b2Actor->GetBodyInstance()->ApplyLinearImpulse(b2Vec2(-0, -1), b2Actor->GetBodyInstance()->GetPosition(), true);
 }
 
 void Character::Tick()

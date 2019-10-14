@@ -27,7 +27,9 @@ FAssetLoader::~FAssetLoader()
 bool FAssetLoader::LoadResources()
 {
 	bool bResult = true;
+	bResult &= LoadFont(RESOURCES_FONT_DEFAULT);
 	bResult &= LoadFont(RESOURCES_FONT_PIXEL);
+	bResult &= LoadFont(RESOURCES_FONT_MOLOT);
 	bResult &= LoadTexture(RESOURCES_TEXTURE_DEBUG_ARROW);
 	return bResult;
 }
