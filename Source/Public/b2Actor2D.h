@@ -62,6 +62,7 @@ public:
 	~b2Actor2D();
 
 	virtual void Tick() override;
+
 	std::string		GetObjectName()			const	{ return ObjectName;  }
 	SFML::Shape*	GetShape()						{ return ObjectShapes.Get(); }
 	b2FixtureDef*	GetFixtureDefinition()			{ if (FixtureDefinition) return FixtureDefinition.get(); else LOG("No BodyFixture"); return nullptr; }

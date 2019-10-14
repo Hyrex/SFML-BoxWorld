@@ -50,10 +50,14 @@ void Application::Initialize()
 	//}
 
 	// Window creation
-	AppWindow.create(RenderWindowData.GetVideoModeFromData(), RenderWindowData.GetWindowName());
+	AppWindow.create(RenderWindowData.GetVideoModeFromData(), RenderWindowData.GetWindowName(), sf::Style::Close | sf::Style::Resize | sf::Style::Titlebar);
 	AppWindow.setVerticalSyncEnabled(true);
 	AppWindow.setActive();
 	AppWindow.setMouseCursorVisible(false);
+	AppWindow.resetGLStates();
+	AppWindow.setFramerateLimit(60);
+
+	AppView = SFML::View(AppWindow.getDefaultView());
 
 	// Border creations
 	const float BorderThickness = 16.0f;
@@ -113,15 +117,21 @@ void Application::Initialize()
 
 void Application::Tick(const float DeltaTime)
 {
-	SFML::Event ExitEvent;
+	SFML::Event WindowEvent;
 
 	// Delay PollEvent, avoid to use
-	while (AppWindow.pollEvent(ExitEvent));
+	while (AppWindow.pollEvent(WindowEvent));
 	{
-		if (ExitEvent.type == SFML::Event::Closed)
+		if (WindowEvent.type == SFML::Event::Closed)
 		{
 			AppWindow.close();		
 		}
+		else if (WindowEvent.type == SFML::Event::Resized)
+		{
+			OnWindowResize();
+		}
+
+		AppWindow.setView(AppView);
 	}
 
 	GameState.Tick();
@@ -232,6 +242,30 @@ void Application::Tick(const float DeltaTime)
 
 	AppWindow.draw(AngleIndicators, 2, SFML::Lines);
 	AppWindow.display();
+}
+
+void Application::OnWindowResize()
+{
+	sf::Vector2f WindowSize = static_cast<sf::Vector2f>(AppWindow.getSize());
+
+	// Minimum size
+	if (WindowSize.x < RenderWindowData.Width)
+		WindowSize.x = (float)RenderWindowData.Width;
+
+	if (WindowSize.y < RenderWindowData.Height)
+		WindowSize.y = (float)RenderWindowData.Height;
+
+	// Apply possible size changes
+	AppWindow.setSize(static_cast<SFML::Vector2u>(WindowSize));
+
+
+	// Reset  GUI view
+	AppView = SFML::View(SFML::FloatRect(0.f, 0.f, WindowSize.x, WindowSize.y));
+	AppWindow.setView(AppView);
+
+
+	// The sidebar should be 180px wide
+	const float width = 180.f;
 }
 
 void Application::SetupText()

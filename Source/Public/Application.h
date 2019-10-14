@@ -15,9 +15,9 @@ class b2Actor2DContactListener;
 
 struct FRenderWindowData
 {
-	int Width = 1000;
-	int Height = 728;
-	int BitsPerPixel;
+	int Width = 1024;
+	int Height = 768;
+	int BitsPerPixel = 32;
 	
 	std::string WindowName = "BoxWorld";
 
@@ -45,6 +45,7 @@ private:
 	static void BallTick(b2Actor2D* Actor);
 	static void SensorOverlap(b2Actor2D* OverlapActor);
 
+	void OnWindowResize();
 	void SetupText();
 
 	FTickHandle TickHandle;
@@ -53,7 +54,7 @@ private:
 
 	FRenderWindowData RenderWindowData;
 	SFML::RenderWindow AppWindow;
-
+	SFML::View AppView;
 	SFML::Music* BGM;
 	
 	//Box2D
