@@ -35,9 +35,6 @@
     <ClInclude Include="Source\Public\TickHandle.h">
       <Filter>Source\Public</Filter>
     </ClInclude>
-    <ClInclude Include="b2Actor2DContactListener.h">
-      <Filter>Source\Public\GameObject</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Public\b2Actor2D.h">
       <Filter>Source\Public\GameObject</Filter>
     </ClInclude>
@@ -58,6 +55,9 @@
     </ClInclude>
     <ClInclude Include="Source\Public\TextEffect.h">
       <Filter>Source\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Public\b2Actor2DContactListener.h">
+      <Filter>Source\Public\GameObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

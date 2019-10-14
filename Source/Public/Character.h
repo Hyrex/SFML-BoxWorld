@@ -2,8 +2,6 @@
 #include "b2Actor2D.h"
 #include "Interface.h"
 
-class Application;
-
 class Character : public ITickable
 {
 public:
@@ -18,11 +16,13 @@ public:
 	void Jump();
 
 	bool IsInitialized() const { return bInitialized; }
+	bool IsJumping() const { return bJump; }
 	b2Actor2D* Getb2Actor() { return b2Actor.get(); }
 
 private:
-
-	std::unique_ptr<b2Actor2D> b2Actor;
+	bool bJump = false;
 	bool bInitialized = false;
+	std::unique_ptr<b2Actor2D> b2Actor;
+
 };
 

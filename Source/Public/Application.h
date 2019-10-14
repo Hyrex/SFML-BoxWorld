@@ -67,8 +67,12 @@ private:
 
 	SFML::Vertex AngleIndicators[2];
 
+	bool bLeftPressed = false;
+	bool bRightPressed = false;
+	bool bSpacePressed = false;
 	bool bRightMousePressed = false;
 	bool bMiddleMousePressed = false;
+
 
 #if DEBUG_GAME
 	std::unique_ptr<FText>							PositionDataText = std::make_unique<FText>();

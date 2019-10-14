@@ -20,6 +20,8 @@
 #define LOAD_CHECK(X, Path) if(!X) { std::string _s = "Cannot find file "; _s+=Path; _s+=". Load failed.\n"; LOG(_s.c_str());}
 #define CORNFLOWER_BLUE SFML::Color(100, 149, 237)
 
+#define GAMETAG_PLAYER_FOOT						1 
+
 #define TEXT_SIZE_S 9
 #define TEXT_SIZE_M 16
 #define TEXT_SIZE_L 30

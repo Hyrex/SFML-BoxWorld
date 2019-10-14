@@ -158,16 +158,21 @@ void Application::Tick(const float DeltaTime)
 			GameState.GetPlayer()->Jump();
 		}
 	}
-	else if (SFML::Keyboard::isKeyPressed(SFML::Keyboard::Escape))
+	
+	if (SFML::Keyboard::isKeyPressed(SFML::Keyboard::Escape))
 	{
 		AppWindow.close();
 	}
-	else if (SFML::Keyboard::isKeyPressed(SFML::Keyboard::A)) //Joy stick plz!
+	
+	if (SFML::Keyboard::isKeyPressed(SFML::Keyboard::A)) //Joy stick plz!
 	{
+
 		GameState.GetPlayer()->MoveLeft();
 	}
-	else if (SFML::Keyboard::isKeyPressed(SFML::Keyboard::D))
+	
+	if (SFML::Keyboard::isKeyPressed(SFML::Keyboard::D))
 	{
+
 		GameState.GetPlayer()->MoveRight();
 	}
 	

@@ -148,10 +148,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="b2Actor2DContactListener.h" />
     <ClInclude Include="Source\Public\Application.h" />
     <ClInclude Include="Source\Public\AssetLoader.h" />
     <ClInclude Include="Source\Public\b2Actor2D.h" />
+    <ClInclude Include="Source\Public\b2Actor2DContactListener.h" />
     <ClInclude Include="Source\Public\Character.h" />
     <ClInclude Include="Source\Public\Defines.h" />
     <ClInclude Include="Source\Public\GameState.h" />

@@ -10,6 +10,19 @@ Character::~Character()
 {
 }
 
+void Character::Tick()
+{
+	if (b2Actor)
+		b2Actor->Tick();
+
+	if (bJump)
+	{
+		b2Vec2 Velocity = b2Actor->GetBody()->GetLinearVelocity();
+		if(Velocity.y <= 0)
+			bJump = false;
+	}
+}
+
 void Character::Initialize()
 {
 	if (bInitialized)
@@ -35,40 +48,74 @@ void Character::Initialize()
 	b2Actor->GetShape()->setOutlineColor(SFML::Color::White);
 	b2Actor->GetShape()->setFillColor(SFML::Color::Black);
 
-	std::cout << "X: " << b2Actor->GetBodyInstance()->GetLinearVelocity().x << " Y: " << b2Actor->GetBodyInstance()->GetLinearVelocity().y << std::endl;
+	std::cout << "X: " << b2Actor->GetBody()->GetLinearVelocity().x << " Y: " << b2Actor->GetBody()->GetLinearVelocity().y << std::endl;
 	b2Actor->GetFixtureDefinition()->density = 0.83f;
 	b2Actor->GetFixtureDefinition()->friction = 0.4f;
 	b2Actor->GetFixtureDefinition()->restitution = 0.25f;
 
-	b2MassData data;
-	data.mass = 1; //kg
-	data.center = b2Vec2(0, 0);// no offset.
-	data.I = 0.0f;
+	b2Actor->GetBodyDef()->fixedRotation = true;
 
+	//b2MassData data;
+	//data.mass = 5; //kg
+	//data.center = b2Vec2(0, 0);// no offset.
+	//data.I = 0.0f;
+	//
+	//b2Actor->GetBody()->SetMassData(&data);
+	////b2Actor->BindOnTick(BallTick);
+	//
+	//
+	//// Add foot body fixture.
+	//b2PolygonShape polygonShape;
+	//polygonShape.SetAsBox(0.3, 0.3, b2Vec2(0, -2), 0);
+	//
+	//b2FixtureDef FootFixtureDef;
+	//FootFixtureDef.isSensor = true;
+	//FootFixtureDef.shape = &polygonShape;
+	//FootFixtureDef.density = 1;
+	//
+	//b2Fixture* FootSensorFixture = b2Actor->GetBody()->CreateFixture(&FootFixtureDef);
+	//FootSensorFixture->SetUserData((void*)"character-foot");
 
-	b2Actor->GetBodyInstance()->SetMassData(&data);
-	//b2Actor->BindOnTick(BallTick);
 	bInitialized = true;
 }
 
 void Character::MoveLeft()
 {
-	b2Actor->GetBodyInstance()->ApplyLinearImpulse(b2Vec2(-1, 0), b2Actor->GetBodyInstance()->GetPosition(), true);
+	if (bInitialized)
+	{
+		b2Vec2 Velocity = b2Actor->GetBody()->GetLinearVelocity();
+		float TargetVelocity = -10.0f;
+
+		float VelocityChange = TargetVelocity - Velocity.x;
+		float Impulse = b2Actor->GetBody()->GetMass() * VelocityChange;
+		b2Actor->GetBody()->ApplyLinearImpulse(b2Vec2(Impulse, 0), b2Actor->GetBody()->GetWorldCenter(),true);
+	}
+		
 }
 
 void Character::MoveRight()
 {
-	b2Actor->GetBodyInstance()->ApplyLinearImpulse(b2Vec2(+1, 0),b2Actor->GetBodyInstance()->GetPosition(), true);
+	if (bInitialized)
+	{
+		b2Vec2 Velocity = b2Actor->GetBody()->GetLinearVelocity();
+		float TargetVelocity = 10.0f;
+
+		float VelocityChange = TargetVelocity - Velocity.x;
+		float Impulse = b2Actor->GetBody()->GetMass() * VelocityChange;
+		b2Actor->GetBody()->ApplyLinearImpulse(b2Vec2(Impulse, 0), b2Actor->GetBody()->GetWorldCenter(), true);
+	}
 }
 
 void Character::Jump()
 {
-	b2Actor->GetBodyInstance()->ApplyLinearImpulse(b2Vec2(-0, -1), b2Actor->GetBodyInstance()->GetPosition(), true);
-}
+	if (bInitialized && !bJump)
+	{
+		bJump = true;
+		b2Vec2 Velocity = b2Actor->GetBody()->GetLinearVelocity();
+		float TargetVelocity = 10;
 
-void Character::Tick()
-{
-	if(b2Actor)
-		b2Actor->Tick();
+		float VelocityChange = TargetVelocity - Velocity.y;
+		float Impulse = b2Actor->GetBody()->GetMass() * VelocityChange;
+		b2Actor->GetBody()->ApplyLinearImpulse(b2Vec2(0, Impulse), b2Actor->GetBody()->GetWorldCenter(), true);
+	}
 }
-
