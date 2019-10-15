@@ -204,7 +204,7 @@ void Application::Tick(const float DeltaTime)
 
 		// Dynamic Text 
 		TimerText->SetText(GameState.GetFormattedElapsedTimeString());
-	
+
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 		{
 			if (!GameState.IsGameStarted())
@@ -224,15 +224,45 @@ void Application::Tick(const float DeltaTime)
 			AppWindow.close();
 		}
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) //Joy stick plz!
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 		{
 			GameState.GetPlayer()->MoveLeft();
 		}
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 		{
-
 			GameState.GetPlayer()->MoveRight();
+		}
+
+		if (sf::Joystick::isConnected(0))
+		{
+			const float fDPadXValue = sf::Joystick::getAxisPosition(0, PS4_DPadX);
+			if (fDPadXValue > 10.00f) GameState.GetPlayer()->MoveRight();
+			if (fDPadXValue < -10.00f) GameState.GetPlayer()->MoveLeft();
+
+			const float fLeftAxisX = sf::Joystick::getAxisPosition(0, PS4_LeftXAxis);
+			if (fLeftAxisX > 10.00f) GameState.GetPlayer()->MoveRight();
+			if (fLeftAxisX < -10.00f) GameState.GetPlayer()->MoveLeft();
+
+			if (sf::Joystick::isButtonPressed(0, PS4_Cross))
+			{
+				if (!GameState.IsGameStarted())
+				{
+					GameState.StartGame();
+					StartGameTranslateOut->Begin();
+					StartGameAlphaFadeOut->Begin();
+				}
+				else
+				{
+					GameState.GetPlayer()->Jump();
+				}
+			}
+
+			const float fLT = sf::Joystick::getAxisPosition(0, PS4_LeftTriggerAxis);
+			const float fRT = sf::Joystick::getAxisPosition(0, PS4_RightTriggerAxis);
+
+			if (fLT > 95.0f && fRT > 95.0f)
+				AppWindow.close();
 		}
 
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Right))

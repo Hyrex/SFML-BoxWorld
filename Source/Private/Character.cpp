@@ -3,24 +3,11 @@
 
 Character::Character()
 {
-	
+
 }
 
 Character::~Character()
 {
-}
-
-void Character::Tick()
-{
-	if (b2Actor)
-		b2Actor->Tick();
-
-	if (bJump)
-	{
-		b2Vec2 Velocity = b2Actor->GetBody()->GetLinearVelocity();
-		if(Velocity.y <= 0)
-			bJump = false;
-	}
 }
 
 void Character::Initialize()
@@ -34,10 +21,10 @@ void Character::Initialize()
 	SpawnParam.ShapeType = EActorShapeType::EST_Rectangle;
 	SpawnParam.BodyType = Eb2ShapeType::ECT_Polygon;
 	SpawnParam.Size = sf::Vector2f(32, 32);
-	
+
 	sf::View ViewPort;
 	Application::GetInstance()->GetWindow()->getViewport(ViewPort);
-	
+
 	SpawnParam.Location = ViewPort.getSize() / 2.0f;
 	SpawnParam.Rotation = 0.0f;
 	SpawnParam.bIsDynamicBody = true;
@@ -63,31 +50,40 @@ void Character::Initialize()
 	b2Actor->GetBody()->SetMassData(&data);
 	//b2Actor->BindOnTick(BallTick);
 
-	//// Add foot body fixture.
-	//b2PolygonShape polygonShape;
-	//polygonShape.SetAsBox(0.3, 0.3, b2Vec2(0, -2), 0);
-	//
-	//b2FixtureDef FootFixtureDef;
-	//FootFixtureDef.isSensor = true;
-	//FootFixtureDef.shape = &polygonShape;
-	//FootFixtureDef.density = 1;
-	//
-	//b2Fixture* FootSensorFixture = b2Actor->GetBody()->CreateFixture(&FootFixtureDef);
-	//FootSensorFixture->SetUserData((void*)"character-foot");
+	/// Add foot body fixture.
+	b2PolygonShape polygonShape;
+	polygonShape.SetAsBox(0.3 / 32.0f, 0.3 / 32.0f, b2Vec2(0, -1), 0);
+	
+	b2FixtureDef FootFixtureDef;
+	FootFixtureDef.isSensor = true;
+	FootFixtureDef.shape = &polygonShape;
+	FootFixtureDef.density = 1;
+	
+	b2Fixture* FootSensorFixture = b2Actor->GetBody()->CreateFixture(&FootFixtureDef);
+	FootSensorFixture->SetUserData((void*)GAMETAG_PLAYER_FOOT);
 
 	bInitialized = true;
 }
 
+void Character::Tick()
+{
+	if (b2Actor)
+		b2Actor->Tick();
+
+	if (bJump)
+	{
+		b2Vec2 Velocity = b2Actor->GetBody()->GetLinearVelocity();
+		if (Velocity.y <= 0)
+			bJump = false;
+	}
+
+	UpdateMovement();
+}
 void Character::MoveLeft()
 {
 	if (bInitialized)
 	{
-		b2Vec2 Velocity = b2Actor->GetBody()->GetLinearVelocity();
-		float TargetVelocity = -10.0f;
-
-		float VelocityChange = TargetVelocity - Velocity.x;
-		float Impulse = b2Actor->GetBody()->GetMass() * VelocityChange;
-		b2Actor->GetBody()->ApplyLinearImpulse(b2Vec2(Impulse, 0), b2Actor->GetBody()->GetWorldCenter(),true);
+		bWantToMoveLeft = true;
 	}
 }
 
@@ -95,12 +91,7 @@ void Character::MoveRight()
 {
 	if (bInitialized)
 	{
-		b2Vec2 Velocity = b2Actor->GetBody()->GetLinearVelocity();
-		float TargetVelocity = 10.0f;
-
-		float VelocityChange = TargetVelocity - Velocity.x;
-		float Impulse = b2Actor->GetBody()->GetMass() * VelocityChange;
-		b2Actor->GetBody()->ApplyLinearImpulse(b2Vec2(Impulse, 0), b2Actor->GetBody()->GetWorldCenter(), true);
+		bWantToMoveRight = true;
 	}
 }
 
@@ -120,5 +111,18 @@ void Character::Jump()
 
 void Character::UpdateMovement()
 {
+	if (bInitialized)
+	{
+		float TargetVelocity = 0.0f;
 
+		if (bWantToMoveLeft && !bWantToMoveRight) TargetVelocity = -10.0f;
+		if (!bWantToMoveLeft && bWantToMoveRight) TargetVelocity = 10.0f;
+
+		bWantToMoveLeft = false;
+		bWantToMoveRight = false;
+		b2Vec2 Velocity = b2Actor->GetBody()->GetLinearVelocity();
+		float VelocityChange = TargetVelocity - Velocity.x;
+		float Impulse = b2Actor->GetBody()->GetMass() * VelocityChange;
+		b2Actor->GetBody()->ApplyLinearImpulse(b2Vec2(Impulse, 0), b2Actor->GetBody()->GetWorldCenter(), true);
+	}
 }
