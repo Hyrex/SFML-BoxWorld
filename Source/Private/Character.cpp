@@ -1,5 +1,6 @@
 #include "Character.h"
 #include "Application.h"
+#include "Defines.h"
 
 Character::Character()
 {
@@ -33,12 +34,11 @@ void Character::Initialize()
 
 	b2Actor = std::move(std::make_unique<b2Actor2D>(SpawnParam));
 	b2Actor->GetShape()->setOutlineColor(sf::Color::White);
-	b2Actor->GetShape()->setFillColor(sf::Color::Black);
+	b2Actor->GetShape()->setFillColor(sf::Color::Transparent);
 
-	std::cout << "X: " << b2Actor->GetBody()->GetLinearVelocity().x << " Y: " << b2Actor->GetBody()->GetLinearVelocity().y << std::endl;
-	b2Actor->GetFixtureDefinition()->density = 0.83f;
-	b2Actor->GetFixtureDefinition()->friction = 0.4f;
-	b2Actor->GetFixtureDefinition()->restitution = 0.25f;
+	b2Actor->GetFixtureDef()->density = 0.83f;
+	b2Actor->GetFixtureDef()->friction = 0.4f;
+	b2Actor->GetFixtureDef()->restitution = 0.25f;
 
 	b2Actor->GetBodyDef()->fixedRotation = true;
 
@@ -48,11 +48,14 @@ void Character::Initialize()
 	data.I = 0.0f;
 
 	b2Actor->GetBody()->SetMassData(&data);
+	b2Actor->BindOnBeginoverlap(FloorOverlap);
 	//b2Actor->BindOnTick(BallTick);
 
 	/// Add foot body fixture.
+
+	const float BoxSize = 16.0f;
 	b2PolygonShape polygonShape;
-	polygonShape.SetAsBox(0.3 / 32.0f, 0.3 / 32.0f, b2Vec2(0, -1), 0);
+	polygonShape.SetAsBox(BoxSize / 32.0f, BoxSize / 32.0f, b2Vec2(0, + 16.f / 32.0f), 0);
 	
 	b2FixtureDef FootFixtureDef;
 	FootFixtureDef.isSensor = true;
@@ -62,6 +65,12 @@ void Character::Initialize()
 	b2Fixture* FootSensorFixture = b2Actor->GetBody()->CreateFixture(&FootFixtureDef);
 	FootSensorFixture->SetUserData((void*)GAMETAG_PLAYER_FOOT);
 
+	// visualize this fixture.
+	FootRect.setSize(sf::Vector2f(BoxSize, BoxSize));
+	FootRect.setFillColor(sf::Color::Red);
+	FootRect.setOutlineColor(sf::Color::White);
+	FootRect.setOrigin(BoxSize / 2, BoxSize / 2);
+
 	bInitialized = true;
 }
 
@@ -70,12 +79,9 @@ void Character::Tick()
 	if (b2Actor)
 		b2Actor->Tick();
 
-	if (bJump)
-	{
-		b2Vec2 Velocity = b2Actor->GetBody()->GetLinearVelocity();
-		if (Velocity.y <= 0)
-			bJump = false;
-	}
+	std::cout << "PosX: " << b2Actor->GetBody()->GetPosition().x * 32.0f << " PosY: " << (b2Actor->GetBody()->GetPosition().y * 32.0f) + 16.0f << std::endl;
+	FootRect.setPosition(b2Actor->GetBody()->GetPosition().x * 32.0f, (b2Actor->GetBody()->GetPosition().y * 32.0f) + 16.f);
+
 
 	UpdateMovement();
 }
@@ -125,4 +131,10 @@ void Character::UpdateMovement()
 		float Impulse = b2Actor->GetBody()->GetMass() * VelocityChange;
 		b2Actor->GetBody()->ApplyLinearImpulse(b2Vec2(Impulse, 0), b2Actor->GetBody()->GetWorldCenter(), true);
 	}
+}
+
+void Character::FloorOverlap(b2Actor2D* OtherActor)
+{
+
+	LOG_CMD("Called Overlap");
 }

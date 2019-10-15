@@ -34,9 +34,9 @@ void b2Actor2D::Construct(const std::string Name, const EActorShapeType ShapeTyp
 		ObjectShapes.Get()->setOutlineColor(sf::Color::Black);
 	}
 
-	BodyDefinition = std::make_unique<b2BodyDef>();
-	BodyDefinition->position = b2Vec2(Location.x / PIXEL_PER_METER, Location.y / PIXEL_PER_METER);
-	BodyDefinition->type = bIsDynamicBody ? b2_dynamicBody : b2_staticBody;
+	BodyDef = std::make_unique<b2BodyDef>();
+	BodyDef->position = b2Vec2(Location.x / PIXEL_PER_METER, Location.y / PIXEL_PER_METER);
+	BodyDef->type = bIsDynamicBody ? b2_dynamicBody : b2_staticBody;
 
 	InitialPosition = b2Vec2(Location.x / PIXEL_PER_METER, Location.y / PIXEL_PER_METER);
 	InitialRotation = Rotation;
@@ -46,17 +46,17 @@ void b2Actor2D::Construct(const std::string Name, const EActorShapeType ShapeTyp
 
 	if (BodyShape)
 	{
-		FixtureDefinition = std::make_unique<b2FixtureDef>();
-		FixtureDefinition->shape = BodyShape.get();
-		FixtureDefinition->density = 0.5f;
-		FixtureDefinition->friction = 0.5f;
-		FixtureDefinition->restitution = 0.5f;
-		FixtureDefinition->isSensor = bGenerateOverlaps; // change it to MakeSensor and get data.
+		FixtureDef = std::make_unique<b2FixtureDef>();
+		FixtureDef->shape = BodyShape.get();
+		FixtureDef->density = 0.5f;
+		FixtureDef->friction = 0.5f;
+		FixtureDef->restitution= 0.5f;
+		FixtureDef->isSensor = bGenerateOverlaps; // change it to MakeSensor and get data.
 	}
 
-	BodyInstance = Application::GetInstance()->GetWorld()->CreateBody(BodyDefinition.get());
-	BodyInstance->CreateFixture(FixtureDefinition.get());
-	BodyInstance->SetUserData(this);
+	Body = Application::GetInstance()->GetWorld()->CreateBody(BodyDef.get());
+	Body->CreateFixture(FixtureDef.get());
+	Body->SetUserData(this);
 
 	this->bGenerateOverlaps = bGenerateOverlaps;
 	bIsDynamicObject = bIsDynamicBody;
@@ -82,10 +82,10 @@ void b2Actor2D::Tick()
 	{
 		// Box2D uses radians for rotation, SFML uses degree
 		// Snap rendering according to Box2D BodyInstance.
-		ObjectShapes.Get()->setRotation(BodyInstance->GetAngle() * 180 / b2_pi);
-		ObjectShapes.Get()->setPosition(BodyInstance->GetPosition().x*PIXEL_PER_METER, BodyInstance->GetPosition().y*PIXEL_PER_METER);
-		DebugForward->setRotation(BodyInstance->GetAngle() * 180 / b2_pi);
-		DebugForward->setPosition(BodyInstance->GetPosition().x*PIXEL_PER_METER, BodyInstance->GetPosition().y*PIXEL_PER_METER);
+		ObjectShapes.Get()->setRotation(Body->GetAngle() * 180 / b2_pi);
+		ObjectShapes.Get()->setPosition(Body->GetPosition().x*PIXEL_PER_METER, Body->GetPosition().y*PIXEL_PER_METER);
+		DebugForward->setRotation(Body->GetAngle() * 180 / b2_pi);
+		DebugForward->setPosition(Body->GetPosition().x*PIXEL_PER_METER, Body->GetPosition().y*PIXEL_PER_METER);
 
 		if (TickCallback != 0)
 		{
@@ -97,9 +97,9 @@ void b2Actor2D::Tick()
 
 void b2Actor2D::ResetToInitTransform()
 {
-	if (BodyInstance)
+	if (Body)
 	{
-		BodyInstance->SetTransform(InitialPosition, InitialRotation);
+		Body->SetTransform(InitialPosition, InitialRotation);
 	}
 	else
 	{
@@ -202,7 +202,7 @@ void b2Actor2D::SetB2ShapeProperties(const Eb2ShapeType BodyType, sf::Vector2f S
 		{
 			if(b2PolygonShape* const p = dynamic_cast<b2PolygonShape*>(BodyShape.get()))
 			{
-				p->SetAsBox((Size.x * 0.5f) / PIXEL_PER_METER, (Size.y * 0.5f) / PIXEL_PER_METER);
+				p->SetAsBox((Size.x * 0.5f ) / PIXEL_PER_METER, (Size.y * 0.5f) / PIXEL_PER_METER);
 			}
 			
 			break;
@@ -223,18 +223,14 @@ void b2Actor2D::SetB2ShapeProperties(const Eb2ShapeType BodyType, sf::Vector2f S
 void b2Actor2D::Activate()
 {
 	bIsActive = true; 
-	BodyInstance->SetActive(true);
-	BodyInstance->SetAwake(true);
+	Body->SetActive(true);
+	Body->SetAwake(true);
 }
 
 void b2Actor2D::MakeInactive()
 {
 	bIsActive = false;
 	
-	// Move it out of screen.
-	BodyInstance->SetActive(false);
-	BodyInstance->SetAwake(false);
-
-	ObjectShapes.Get()->setPosition(sf::Vector2f(-200, -200));
-	DebugForward->setPosition(sf::Vector2f(-200, -200));
+	Body->SetActive(false);
+	Body->SetAwake(false);
 }

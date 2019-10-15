@@ -63,19 +63,19 @@ public:
 
 	virtual void Tick() override;
 
-	std::string		GetObjectName()			const	{ return ObjectName;  }
-	sf::Shape*	GetShape()						{ return ObjectShapes.Get(); }
-	b2FixtureDef*	GetFixtureDefinition()			{ if (FixtureDefinition) return FixtureDefinition.get(); else LOG("No BodyFixture"); return nullptr; }
+	std::string		GetObjectName()							const	{ return ObjectName;  }
+	sf::Shape*	GetShape()											{ return ObjectShapes.Get(); }
+	b2FixtureDef*	GetFixtureDef()									{ return FixtureDef.get(); }
 	
-	b2Body*			GetBody()						{ if (BodyInstance) return BodyInstance; else LOG("No BodyInstance"); return nullptr; }
-	b2BodyDef*		GetBodyDef()					{ return BodyDefinition.get(); }
-	bool			IsDynamic()				const	{ return bIsDynamicObject; }
-	bool			IsActive()				const	{ return bIsActive; }
+	b2Body*			GetBody()										{ return Body; }
+	b2BodyDef*		GetBodyDef()									{ return BodyDef.get(); }
+	bool			IsDynamic()								const	{ return bIsDynamicObject; }
+	bool			IsActive()								const	{ return bIsActive; }
 
-	const sf::Vector2f&	GetLocation()			{ return ObjectShapes.Get()->getPosition(); }
+	const sf::Vector2f&	GetLocation()								{ return ObjectShapes.Get()->getPosition(); }
 	void SetInitTransform(sf::Vector2f Location, float Rotation)	{ SetInitLocation(Location); SetInitRotation(Rotation); }
 	void SetInitLocation(b2Vec2 Location)							{ InitialPosition = Location; }
-	void SetInitLocation(sf::Vector2f Location)					{ InitialPosition = b2Actor2D::Tob2Vec2Location(Location); }
+	void SetInitLocation(sf::Vector2f Location)						{ InitialPosition = b2Actor2D::Tob2Vec2Location(Location); }
 	void SetInitRotation(float Rotation)							{ InitialRotation = Rotation; }
 	void ResetToInitTransform();
 
@@ -112,10 +112,10 @@ private:
 	FShapeCollection ObjectShapes;	// Act like display component
 
 	/** Box2D Components*/
-	b2Body* BodyInstance;
-	std::unique_ptr<b2BodyDef>		BodyDefinition;
+	b2Body* Body;
+	std::unique_ptr<b2BodyDef>		BodyDef;
 	std::unique_ptr<b2Shape>		BodyShape;				// Act as collision component
-	std::unique_ptr<b2FixtureDef>	FixtureDefinition;
+	std::unique_ptr<b2FixtureDef>	FixtureDef;
 	Eb2ShapeType CollisionType;
 
 	/////////////////////////////////

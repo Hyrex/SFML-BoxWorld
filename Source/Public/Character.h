@@ -20,12 +20,15 @@ public:
 	bool IsJumping() const { return bJump; }
 	b2Actor2D* Getb2Actor() { return b2Actor.get(); }
 
+	sf::Shape* GetFootBox() { return &FootRect; }
+	static void FloorOverlap(b2Actor2D* OverlapActor);
+
 private:
 	bool bWantToMoveLeft = false;
 	bool bWantToMoveRight = false;
 	bool bJump = false;
 	bool bInitialized = false;
 	std::unique_ptr<b2Actor2D> b2Actor;
-
+	sf::RectangleShape FootRect;
 };
 

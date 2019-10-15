@@ -191,7 +191,6 @@ void Application::Tick(const float DeltaTime)
 	AngleIndicators[1].position = sf::Vector2f(sf::Mouse::getPosition(AppWindow));
 
 	PositionDataText->SetText(GameState.GetMouseLocationString());
-	PositionDataText->Text.setPosition(sf::Vector2f(sf::Mouse::getPosition(AppWindow)));
 
 	TextRenderer.Tick();
 
@@ -326,6 +325,7 @@ void Application::Tick(const float DeltaTime)
 	{
 		AppWindow.draw(*GameState.GetPlayer()->Getb2Actor()->GetShape());
 		AppWindow.draw(*GameState.GetPlayer()->Getb2Actor()->DebugForward);
+		AppWindow.draw(*GameState.GetPlayer()->GetFootBox());
 	}
 
 	for (auto& Itr : TextRenderer.GetTextEffectBundles())
@@ -364,6 +364,8 @@ void Application::SetupText()
 {
 	const float ViewportX = (float)RenderWindowData.Width;
 	const float ViewportY = (float)RenderWindowData.Height;
+
+	PositionDataText->Text.setPosition(sf::Vector2f(32.0f, 32.0f));
 
 	// Static String Texts
 	TimerText->Text.setPosition(sf::Vector2f(32.0f, ViewportY - 64.0f));
