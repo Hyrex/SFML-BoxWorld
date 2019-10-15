@@ -72,25 +72,27 @@ void Application::Initialize()
 	const sf::Vector2f RBorderLocation(ViewportX - BorderThickness * 0.5f, ViewportY * 0.5f);
 
 	// Collapsed function body. Transferring ownership of local unique ptr to the container
-	auto b2ActorInit = [this](std::unique_ptr<b2Actor2D>& p, const sf::Color c) ->void
+	auto FloorActorsInit = [this](std::unique_ptr<b2Actor2D>& p, const sf::Color c) ->void
 	{
 		p->GetShape()->setOutlineThickness(-1);
 		p->GetShape()->setOutlineColor(sf::Color::Black);
 		p->GetShape()->setFillColor(c);
+		p->SetGenerateOverlap(true);
+		p->GetFixture()->SetUserData((void*)GAMETAG_STATIC_OBJECT);
 		b2Actors.push_back(move(p));
 	};
 
 	std::unique_ptr<b2Actor2D> TopBorder = std::make_unique<b2Actor2D>("TopBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, XBorder, UBorderLocation);
-	b2ActorInit(TopBorder, sf::Color(100, 100, 100));
+	FloorActorsInit(TopBorder, sf::Color(100, 100, 100));
 
 	std::unique_ptr<b2Actor2D> LeftBorder = std::make_unique<b2Actor2D>("LeftBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, YBorder, LBorderLocation);
-	b2ActorInit(LeftBorder, sf::Color(100, 100, 100));
+	FloorActorsInit(LeftBorder, sf::Color(100, 100, 100));
 
 	std::unique_ptr<b2Actor2D> RightBorder = std::make_unique<b2Actor2D>("RightBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, YBorder, RBorderLocation);
-	b2ActorInit(RightBorder, sf::Color(100, 100, 100));
+	FloorActorsInit(RightBorder, sf::Color(100, 100, 100));
 
 	std::unique_ptr<b2Actor2D> BotBorder = std::make_unique<b2Actor2D>("BotBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, XBorder, DBorderLocation);
-	b2ActorInit(BotBorder, sf::Color(100, 100, 100));
+	FloorActorsInit(BotBorder, sf::Color(100, 100, 100));
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -111,7 +113,7 @@ void Application::Initialize()
 
 	std::unique_ptr<b2Actor2D> ScoreSensor = std::make_unique<b2Actor2D>("sensor", EActorShapeType::EST_Circle, Eb2ShapeType::ECT_Circle, sensorSize, sensorPos, 0.0f, false, true);
 	ScoreSensor->BindOnBeginoverlap(SensorOverlap);
-	b2ActorInit(ScoreSensor, sf::Color(255, 255, 0, 100));
+	FloorActorsInit(ScoreSensor, sf::Color(255, 255, 0, 100));
 
 	SetupText();
 }
@@ -402,19 +404,7 @@ void Application::SetupText()
 	TextRenderer.Add(e4);
 }
 
-void Application::BallTick(b2Actor2D* Actor)
-{
-	/// this code was to mark inactive, no longer in need to pool anything.
-	if (!Actor) return;
-	if (!Application::GetInstance()->GameState.IsGameStarted()) return;
-
-	const bool Ax = Actor->GetLocation().x >= Application::GetInstance()->RenderWindowData.Width + 64.0f;
-	const bool Bx = Actor->GetLocation().x <= -64.0f;
-	const bool Ay = Actor->GetLocation().y >= Application::GetInstance()->RenderWindowData.Height + 64.0f;
-	const bool By = Actor->GetLocation().y <= -64.0f;
-}
-
-void Application::SensorOverlap(b2Actor2D* OverlapActor)
+void Application::SensorOverlap(b2Actor2D* Actor, b2Actor2D* OverlapActor, void* UserData, void* OtherUserData)
 {
 	if (!Application::GetInstance()->GameState.IsGameStarted()) return;
 

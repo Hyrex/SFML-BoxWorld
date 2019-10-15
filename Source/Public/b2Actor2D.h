@@ -49,6 +49,7 @@ struct Fb2ActorSpawnParam
 	sf::Vector2f Location;
 	float Rotation; 
 	bool bIsDynamicBody; 
+	bool bIsSensor;
 	bool bGenerateOverlaps;
 	bool bAutoActivate;
 };
@@ -57,16 +58,16 @@ class b2Actor2D : public ITickable
 {
 public:
 
-	b2Actor2D(const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, sf::Vector2f Size = sf::Vector2f(1,1), sf::Vector2f Location = sf::Vector2f(0,0), const float Rotation = 0.0f, const bool bIsDynamicBody = false, const bool bGenerateOverlaps = false, const bool bAutoActivate = true);
+	b2Actor2D(const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, sf::Vector2f Size = sf::Vector2f(1,1), sf::Vector2f Location = sf::Vector2f(0,0), const float Rotation = 0.0f, const bool bIsDynamicBody = false, const bool bIsSensor = false, const bool bGenerateOverlap = false, const bool bAutoActivate = true);
 	b2Actor2D(const Fb2ActorSpawnParam SpawnParam);
 	~b2Actor2D();
 
 	virtual void Tick() override;
 
 	std::string		GetObjectName()							const	{ return ObjectName;  }
-	sf::Shape*	GetShape()											{ return ObjectShapes.Get(); }
+	sf::Shape*		GetShape()											{ return ObjectShapes.Get(); }
 	b2FixtureDef*	GetFixtureDef()									{ return FixtureDef.get(); }
-	
+	b2Fixture*		GetFixture()									{ return Fixture; }
 	b2Body*			GetBody()										{ return Body; }
 	b2BodyDef*		GetBodyDef()									{ return BodyDef.get(); }
 	bool			IsDynamic()								const	{ return bIsDynamicObject; }
@@ -79,10 +80,11 @@ public:
 	void SetInitRotation(float Rotation)							{ InitialRotation = Rotation; }
 	void ResetToInitTransform();
 
-	void BeginOverlap(b2Actor2D* OverlappedActor);
-	void EndOverlap(b2Actor2D* OverlappedActor);
-	void BindOnBeginoverlap(void (*Callback)(b2Actor2D* OverlappedActor));
-	void BindOnEndOverlap(void (*Callback)(b2Actor2D* OverlappedActor));
+	void SetGenerateOverlap(const bool bNewGenerate)				{ bGenerateOverlaps = bNewGenerate; }
+	void BeginOverlap(b2Actor2D* Actor, b2Actor2D* OverlappedActor, void* UserData, void* OtherUserData);
+	void EndOverlap(b2Actor2D* Actor, b2Actor2D* OverlappedActor, void* UserData, void* OtherUserData);
+	void BindOnBeginoverlap(void (*Callback)(b2Actor2D* Actor, b2Actor2D* OverlappedActor, void* UserData, void* OtherUserData));
+	void BindOnEndOverlap(void (*Callback)(b2Actor2D* Actor, b2Actor2D* OverlappedActor, void* UserData, void* OtherUserData));
 	void BindOnTick(void(*TickFunction)(b2Actor2D* Actor));
 
 	void Activate();
@@ -96,14 +98,14 @@ public:
 
 private:
 
-	void Construct(const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, sf::Vector2f Size = sf::Vector2f(1, 1), sf::Vector2f Location = sf::Vector2f(0, 0), const float Rotation = 0.0f, const bool bIsDynamicBody = false, const bool bGenerateOverlaps = false, const bool bAutoActivate = true);
+	void Construct(const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, sf::Vector2f Size = sf::Vector2f(1, 1), sf::Vector2f Location = sf::Vector2f(0, 0), const float Rotation = 0.0f, const bool bIsDynamicBody = false, const bool bIsSensor = false, const bool bGenerateOverlaps = false, const bool bAutoActivate = true);
 	void MakeShapeInstance(const EActorShapeType ShapeType);
 	void SetShapeProperties(const EActorShapeType ShapeType, sf::Vector2f Size);
 	void MakeB2ShapeInstance(const Eb2ShapeType BodyType);
 	void SetB2ShapeProperties(const Eb2ShapeType BodyType, sf::Vector2f Size);
 
-	void(*OnBeginOverlapCallback)(b2Actor2D* OverlappedActor) = 0;
-	void(*OnEndOverlapCallback)(b2Actor2D* OverlappedActor) = 0;
+	void(*OnBeginOverlapCallback)(b2Actor2D* Actor, b2Actor2D* OverlappedActor, void* ActorUserData, void* OtherActorUserData) = 0;
+	void(*OnEndOverlapCallback)(b2Actor2D* Actor, b2Actor2D* OverlappedActor, void* ActorUserData, void* OtherActorUserData) = 0;
 	void(*TickCallback)(b2Actor2D* Actor) = 0;
 
 	std::string ObjectName;
@@ -115,6 +117,8 @@ private:
 	b2Body* Body;
 	std::unique_ptr<b2BodyDef>		BodyDef;	
 	std::unique_ptr<b2Shape>		BodyShape;				// Act as collision component
+
+	b2Fixture* Fixture;
 	std::unique_ptr<b2FixtureDef>	FixtureDef;				// Fixture = Collsion
 	Eb2ShapeType CollisionType;
 

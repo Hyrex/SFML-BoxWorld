@@ -42,28 +42,30 @@ public:
 private:
 
 	Application();
-	static void BallTick(b2Actor2D* Actor);
-	static void SensorOverlap(b2Actor2D* OverlapActor);
+	static void SensorOverlap(b2Actor2D* Actor, b2Actor2D* OverlapActor, void* UserData, void* OtherUserData);
 
+	void OnKeyPressed();
+	void OnKeyRelease();
 	void OnWindowResize();
+
 	void SetupText();
 
-	FTickHandle TickHandle;
-	FGameState GameState;
-	FTextManager TextRenderer;
+	FTickHandle			TickHandle;
+	FTextManager		TextRenderer;
+	FGameState			GameState;
+	FRenderWindowData	RenderWindowData;
 
-	FRenderWindowData RenderWindowData;
-	sf::RenderWindow AppWindow;
-	sf::View AppView;
-	sf::Music* BGM;
+	sf::RenderWindow	AppWindow;
+	sf::View			AppView;
+	sf::Music*			BGM;
 	
 	//Box2D
-	b2Vec2 Gravity; 
-	std::shared_ptr<b2World> World;
-	std::unique_ptr<b2Actor2DContactListener> b2ActorContactListner;
+	b2Vec2										Gravity; 
+	std::shared_ptr<b2World>					World;
+	std::unique_ptr<b2Actor2DContactListener>	b2ActorContactListner;
 
-	std::vector<std::unique_ptr<sf::Shape>> RenderShapes;
-	std::vector<std::unique_ptr<b2Actor2D>> b2Actors;
+	std::vector<std::unique_ptr<sf::Shape>>		RenderShapes;
+	std::vector<std::unique_ptr<b2Actor2D>>		b2Actors;
 
 	sf::Vertex AngleIndicators[2];
 
@@ -87,6 +89,5 @@ private:
 	std::unique_ptr<FText>							TimerText = std::make_unique<FText>();
 
 	static Application* Instance;
-	void OnKeyPressed();
-	void OnKeyRelease();
+	
 };

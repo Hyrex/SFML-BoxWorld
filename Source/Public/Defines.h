@@ -17,7 +17,8 @@
 #define LOAD_CHECK(X, Path) if(!X) { std::string _s = "Cannot find file "; _s+=Path; _s+=". Load failed.\n"; LOG(_s.c_str());}
 #define CORNFLOWER_BLUE sf::Color(100, 149, 237)
 
-#define GAMETAG_PLAYER_FOOT						1 
+#define GAMETAG_STATIC_OBJECT	1
+#define GAMETAG_PLAYER_FOOT		2
 
 #define TEXT_SIZE_S 9
 #define TEXT_SIZE_M 16
@@ -42,7 +43,7 @@
 #define PS4_LeftYAxis			(sf::Joystick::Axis)1 //-100 Up, 100 Down
 #define PS4_RightXAxis			(sf::Joystick::Axis)2 //-100 Left, 100 Right
 #define PS4_RightYAxis			(sf::Joystick::Axis)3 //-100 Up, 100 Down
-#define PS4_LeftTriggerAxis     (sf::Joystick::Axis)4 //-100 Release, 100 Press
+#define PS4_LeftTriggerAxis		(sf::Joystick::Axis)4 //-100 Release, 100 Press
 #define PS4_RightTriggerAxis	(sf::Joystick::Axis)5 //-100 Release, 100 Press	
 #define PS4_DPadX				(sf::Joystick::Axis)6 //-100 Left, 100 Right
 #define PS4_DPadY				(sf::Joystick::Axis)7 //-100 Up, 100 Down

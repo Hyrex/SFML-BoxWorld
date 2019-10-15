@@ -2,7 +2,7 @@
 #include "Application.h"
 #include "AssetLoader.h"
 
-b2Actor2D::b2Actor2D(const std::string Name, EActorShapeType ShapeType, const Eb2ShapeType BodyType, sf::Vector2f Size, sf::Vector2f Location, const float Rotation, const bool bIsDynamicBody, const bool bGenerateOverlaps, const bool bAutoActivate)
+b2Actor2D::b2Actor2D(const std::string Name, EActorShapeType ShapeType, const Eb2ShapeType BodyType, sf::Vector2f Size, sf::Vector2f Location, const float Rotation, const bool bIsDynamicBody, const bool bIsSensor  ,const bool bGenerateOverlaps, const bool bAutoActivate)
 {
 	Construct(Name, ShapeType, BodyType, Size, Location, Rotation, bIsDynamicBody, bGenerateOverlaps, bAutoActivate);
 }
@@ -10,14 +10,14 @@ b2Actor2D::b2Actor2D(const std::string Name, EActorShapeType ShapeType, const Eb
 b2Actor2D::b2Actor2D(const Fb2ActorSpawnParam SpawnParam)
 {	
 	Construct(SpawnParam.Name, SpawnParam.ShapeType, SpawnParam.BodyType, 
-		SpawnParam.Size, SpawnParam.Location, SpawnParam.Rotation, SpawnParam.bIsDynamicBody, SpawnParam.bGenerateOverlaps, SpawnParam.bAutoActivate);
+		SpawnParam.Size, SpawnParam.Location, SpawnParam.Rotation, SpawnParam.bIsDynamicBody, SpawnParam.bIsSensor, SpawnParam.bGenerateOverlaps, SpawnParam.bAutoActivate);
 }
 
 b2Actor2D::~b2Actor2D() 
 {
 }
 
-void b2Actor2D::Construct(const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, sf::Vector2f Size, sf::Vector2f Location, const float Rotation, const bool bIsDynamicBody, const bool bGenerateOverlaps, const bool bAutoActivate)
+void b2Actor2D::Construct(const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, sf::Vector2f Size, sf::Vector2f Location, const float Rotation, const bool bIsDynamicBody, const bool bIsSensor , const bool bGenerateOverlaps, const bool bAutoActivate)
 {
 	ObjectName = Name;
 	ObjectShapes.ShapeType = ShapeType;
@@ -51,11 +51,11 @@ void b2Actor2D::Construct(const std::string Name, const EActorShapeType ShapeTyp
 		FixtureDef->density = 0.5f;
 		FixtureDef->friction = 0.5f;
 		FixtureDef->restitution= 0.5f;
-		FixtureDef->isSensor = bGenerateOverlaps; // change it to MakeSensor and get data.
+		FixtureDef->isSensor = bIsSensor; // change it to MakeSensor and get data.
 	}
 
 	Body = Application::GetInstance()->GetWorld()->CreateBody(BodyDef.get());
-	Body->CreateFixture(FixtureDef.get());
+	Fixture = Body->CreateFixture(FixtureDef.get());
 	Body->SetUserData(this);
 
 	this->bGenerateOverlaps = bGenerateOverlaps;
@@ -78,7 +78,7 @@ void b2Actor2D::Construct(const std::string Name, const EActorShapeType ShapeTyp
 
 void b2Actor2D::Tick()
 {
-	if (bIsActive)
+	if (bIsActive && Body)
 	{
 		// Box2D uses radians for rotation, SFML uses degree
 		// Snap rendering according to Box2D BodyInstance.
@@ -108,34 +108,34 @@ void b2Actor2D::ResetToInitTransform()
 	}
 }
 
-void b2Actor2D::BeginOverlap(b2Actor2D* OverlappedActor)
+void b2Actor2D::BeginOverlap(b2Actor2D* Actor, b2Actor2D* OverlappedActor, void* UserData, void* OtherUserData)
 {
-	if (bGenerateOverlaps && OverlappedActor)
+	if (bGenerateOverlaps && OverlappedActor && Actor)
 	{
 		if (OnBeginOverlapCallback)
 		{
-			OnBeginOverlapCallback(OverlappedActor);
+			OnBeginOverlapCallback(Actor, OverlappedActor, UserData, OtherUserData);
 		}
 	}
 }
 
-void b2Actor2D::EndOverlap(b2Actor2D* OverlappedActor)
+void b2Actor2D::EndOverlap(b2Actor2D* Actor, b2Actor2D* OverlappedActor, void* UserData, void* OtherUserData)
 {
-	if (bGenerateOverlaps && OverlappedActor)
+	if (bGenerateOverlaps && OverlappedActor && Actor)
 	{
 		if (OnEndOverlapCallback)
 		{
-			OnEndOverlapCallback(OverlappedActor);
+			OnEndOverlapCallback(Actor, OverlappedActor, UserData, OtherUserData);
 		}
 	}
 }
 
-void b2Actor2D::BindOnBeginoverlap(void (*Callback)(b2Actor2D* OverlappedActor))
+void b2Actor2D::BindOnBeginoverlap(void (*Callback)(b2Actor2D* Actor, b2Actor2D* OverlappedActor, void* UserData, void* OtherUserData))
 {
 	OnBeginOverlapCallback = Callback;
 }
 
-void b2Actor2D::BindOnEndOverlap(void (*Callback)(b2Actor2D* OverlappedActor))
+void b2Actor2D::BindOnEndOverlap(void (*Callback)(b2Actor2D* Actor, b2Actor2D* OverlappedActor, void* UserData, void* OtherUserData))
 {
 	OnEndOverlapCallback = Callback;
 }

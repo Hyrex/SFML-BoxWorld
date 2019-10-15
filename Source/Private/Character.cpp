@@ -29,7 +29,8 @@ void Character::Initialize()
 	SpawnParam.Location = ViewPort.getSize() / 2.0f;
 	SpawnParam.Rotation = 0.0f;
 	SpawnParam.bIsDynamicBody = true;
-	SpawnParam.bGenerateOverlaps = false;
+	SpawnParam.bIsSensor = false;
+	SpawnParam.bGenerateOverlaps = true; /// FIXME ISSUE # 1 true to generate overlap as sensor but fall thru the world, true stay in the world but no event called.
 	SpawnParam.bAutoActivate = true;
 
 	b2Actor = std::move(std::make_unique<b2Actor2D>(SpawnParam));
@@ -39,6 +40,7 @@ void Character::Initialize()
 	b2Actor->GetFixtureDef()->density = 0.83f;
 	b2Actor->GetFixtureDef()->friction = 0.4f;
 	b2Actor->GetFixtureDef()->restitution = 0.25f;
+	b2Actor->GetFixtureDef()->isSensor = false;
 
 	b2Actor->GetBodyDef()->fixedRotation = true;
 
@@ -50,10 +52,8 @@ void Character::Initialize()
 	b2Actor->GetBody()->SetMassData(&data);
 	b2Actor->BindOnBeginoverlap(BeginOverlap);
 	b2Actor->BindOnEndOverlap(EndOverlap);
-	//b2Actor->BindOnTick(BallTick);
 
-	/// Add foot body fixture.
-
+	// Foot Fixture
 	const float BoxSize = 16.0f;
 	b2PolygonShape polygonShape;
 	polygonShape.SetAsBox(BoxSize / 32.0f, BoxSize / 32.0f, b2Vec2(0, + 16.f / 32.0f), 0);
@@ -132,15 +132,27 @@ void Character::UpdateMovement()
 	}
 }
 
-void Character::BeginOverlap(b2Actor2D* OtherActor)
+void Character::BeginOverlap(b2Actor2D* Actor, b2Actor2D* OtherActor, void* UserData, void* OtherUserData)
 {
+	if (OtherActor && OtherActor->GetFixture())
+	{
+		/// FIXME ISSUE #2 CRASH. UserData isn't properly set?
+		//if ((int)OtherActor->GetFixture()->GetUserData() == GAMETAG_STATIC_OBJECT)
+		{
+		//	if (Character* p = reinterpret_cast<Character*>(Actor))
+		//	{
+			//	p->bJump = false;
+		//	}
+		}
+	}
+	
 
 	LOG_CMD("Character Begin Overlap");
 }
 
 
-void Character::EndOverlap(b2Actor2D* OtherActor)
+void Character::EndOverlap(b2Actor2D* Actor, b2Actor2D* OtherActor, void* UserData, void* OtherUserData)
 {
-
+	
 	LOG_CMD("Character End Overlap");
 }
