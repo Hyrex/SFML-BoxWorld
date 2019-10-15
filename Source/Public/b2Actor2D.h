@@ -113,9 +113,9 @@ private:
 
 	/** Box2D Components*/
 	b2Body* Body;
-	std::unique_ptr<b2BodyDef>		BodyDef;
+	std::unique_ptr<b2BodyDef>		BodyDef;	
 	std::unique_ptr<b2Shape>		BodyShape;				// Act as collision component
-	std::unique_ptr<b2FixtureDef>	FixtureDef;
+	std::unique_ptr<b2FixtureDef>	FixtureDef;				// Fixture = Collsion
 	Eb2ShapeType CollisionType;
 
 	/////////////////////////////////

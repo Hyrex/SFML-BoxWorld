@@ -21,7 +21,8 @@ public:
 	b2Actor2D* Getb2Actor() { return b2Actor.get(); }
 
 	sf::Shape* GetFootBox() { return &FootRect; }
-	static void FloorOverlap(b2Actor2D* OverlapActor);
+	static void BeginOverlap(b2Actor2D* OverlapActor);
+	static void EndOverlap(b2Actor2D* OverlapActor);
 
 private:
 	bool bWantToMoveLeft = false;

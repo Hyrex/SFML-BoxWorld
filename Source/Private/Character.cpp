@@ -48,7 +48,8 @@ void Character::Initialize()
 	data.I = 0.0f;
 
 	b2Actor->GetBody()->SetMassData(&data);
-	b2Actor->BindOnBeginoverlap(FloorOverlap);
+	b2Actor->BindOnBeginoverlap(BeginOverlap);
+	b2Actor->BindOnEndOverlap(EndOverlap);
 	//b2Actor->BindOnTick(BallTick);
 
 	/// Add foot body fixture.
@@ -79,9 +80,7 @@ void Character::Tick()
 	if (b2Actor)
 		b2Actor->Tick();
 
-	std::cout << "PosX: " << b2Actor->GetBody()->GetPosition().x * 32.0f << " PosY: " << (b2Actor->GetBody()->GetPosition().y * 32.0f) + 16.0f << std::endl;
 	FootRect.setPosition(b2Actor->GetBody()->GetPosition().x * 32.0f, (b2Actor->GetBody()->GetPosition().y * 32.0f) + 16.f);
-
 
 	UpdateMovement();
 }
@@ -133,8 +132,15 @@ void Character::UpdateMovement()
 	}
 }
 
-void Character::FloorOverlap(b2Actor2D* OtherActor)
+void Character::BeginOverlap(b2Actor2D* OtherActor)
 {
 
-	LOG_CMD("Called Overlap");
+	LOG_CMD("Character Begin Overlap");
+}
+
+
+void Character::EndOverlap(b2Actor2D* OtherActor)
+{
+
+	LOG_CMD("Character End Overlap");
 }
