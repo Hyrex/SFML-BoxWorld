@@ -72,14 +72,12 @@ private:
 	bool bSpacePressed = false;
 	bool bRightMousePressed = false;
 	bool bMiddleMousePressed = false;
+	bool bIsPaused = false;
 
 
 #if DEBUG_GAME
 	std::unique_ptr<FText>							PositionDataText = std::make_unique<FText>();
 	std::unique_ptr<FTextFlashEffect>				FlashPositionEffect = std::make_unique<FTextFlashEffect>();
-
-	std::unique_ptr<FText>							TranslateTestText = std::make_unique<FText>();
-	std::unique_ptr<FTextPingPongTranslationEffect>	PingPongEffect = std::make_unique<FTextPingPongTranslationEffect>();
 #endif
 
 	std::unique_ptr<FText>							StartGameText = std::make_unique<FText>();
@@ -89,4 +87,6 @@ private:
 	std::unique_ptr<FText>							TimerText = std::make_unique<FText>();
 
 	static Application* Instance;
+	void OnKeyPressed();
+	void OnKeyRelease();
 };

@@ -8,6 +8,7 @@
 
 Application*  Application::Instance = nullptr;
 
+
 Application::Application()
 {
 	b2ActorContactListner = std::make_unique<b2Actor2DContactListener>();
@@ -71,7 +72,7 @@ void Application::Initialize()
 	const sf::Vector2f RBorderLocation(ViewportX - BorderThickness * 0.5f, ViewportY * 0.5f);
 
 	// Collapsed function body. Transferring ownership of local unique ptr to the container
-	auto b2ActorInit = [this](std::unique_ptr<b2Actor2D>& p, const sf::Color c) ->void 
+	auto b2ActorInit = [this](std::unique_ptr<b2Actor2D>& p, const sf::Color c) ->void
 	{
 		p->GetShape()->setOutlineThickness(-1);
 		p->GetShape()->setOutlineColor(sf::Color::Black);
@@ -83,7 +84,7 @@ void Application::Initialize()
 	b2ActorInit(TopBorder, sf::Color(100, 100, 100));
 
 	std::unique_ptr<b2Actor2D> LeftBorder = std::make_unique<b2Actor2D>("LeftBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, YBorder, LBorderLocation);
-	b2ActorInit(LeftBorder , sf::Color(100, 100, 100) );
+	b2ActorInit(LeftBorder, sf::Color(100, 100, 100));
 
 	std::unique_ptr<b2Actor2D> RightBorder = std::make_unique<b2Actor2D>("RightBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, YBorder, RBorderLocation);
 	b2ActorInit(RightBorder, sf::Color(100, 100, 100));
@@ -95,19 +96,19 @@ void Application::Initialize()
 	{
 		AngleIndicators[i].color = (i == 1) ? sf::Color::Cyan : sf::Color::Blue;
 	}
-		
+
 	// Board
 	const float offsetX = ViewportX * 0.98f;
 	const float offsetY = ViewportY * 0.35f;
 	const sf::Vector2f boardSize(8.0f, 200.0f);
 	const sf::Vector2f boardPos(ViewportX * 0.98f, ViewportY * 0.35f);
-	
+
 	const sf::Vector2f netEdgeSize(8.0f, 90.0f);
 	const sf::Vector2f netEdgePos(offsetX - 48.0f + (netEdgeSize.y / 2 * sin(-0.174533f)), offsetY + 16.0f);
 
 	const sf::Vector2f sensorSize(48.0f, 48.0f);
 	const sf::Vector2f sensorPos((boardPos.x + netEdgePos.x) / 2, netEdgePos.y);
-		
+
 	std::unique_ptr<b2Actor2D> ScoreSensor = std::make_unique<b2Actor2D>("sensor", EActorShapeType::EST_Circle, Eb2ShapeType::ECT_Circle, sensorSize, sensorPos, 0.0f, false, true);
 	ScoreSensor->BindOnBeginoverlap(SensorOverlap);
 	b2ActorInit(ScoreSensor, sf::Color(255, 255, 0, 100));
@@ -122,107 +123,165 @@ void Application::Tick(const float DeltaTime)
 	// Delay PollEvent, avoid to use
 	while (AppWindow.pollEvent(WindowEvent));
 	{
-		if (WindowEvent.type == sf::Event::Closed)
+		switch (WindowEvent.type)
 		{
-			AppWindow.close();		
-		}
-		else if (WindowEvent.type == sf::Event::Resized)
-		{
+		case sf::Event::Closed:
+			AppWindow.close();
+			break;
+		case sf::Event::Resized:
 			OnWindowResize();
+			AppWindow.setView(AppView);
+			break;
+		case sf::Event::LostFocus:
+			std::cout << "Window lose focus." << std::endl;
+			bIsPaused = true;
+			break;
+		case sf::Event::GainedFocus:
+			std::cout << "Window gain focus." << std::endl;
+			bIsPaused = false;
+			break;
+		case sf::Event::TextEntered:
+			break;
+		case sf::Event::KeyPressed:
+			OnKeyPressed();
+			//std::cout << (int)WindowEvent.key.code << " pressed." << std::endl;
+			break;
+		case sf::Event::KeyReleased:
+			OnKeyRelease();
+			//std::cout << (int)WindowEvent.key.code << " released." << std::endl;
+			break;
+		case sf::Event::MouseWheelScrolled:
+			break;
+		case sf::Event::MouseButtonPressed:
+			break;
+		case sf::Event::MouseButtonReleased:
+			break;
+		case sf::Event::MouseMoved:
+			break;
+		case sf::Event::MouseEntered:
+			break;
+		case sf::Event::MouseLeft:
+			break;
+		case sf::Event::JoystickButtonPressed:
+			break;
+		case sf::Event::JoystickButtonReleased:
+			break;
+		case sf::Event::JoystickMoved:
+			break;
+		case sf::Event::JoystickConnected:
+			break;
+		case sf::Event::JoystickDisconnected:
+			break;
+		case sf::Event::TouchBegan:
+			break;
+		case sf::Event::TouchMoved:
+			break;
+		case sf::Event::TouchEnded:
+			break;
+		case sf::Event::SensorChanged:
+
+			break;
 		}
 
-		AppWindow.setView(AppView);
+		//AppWindow.setView(AppView);
 	}
 
-	GameState.Tick();
-	TextRenderer.Tick();
+	// Debug draw
+	AngleIndicators[0].position = sf::Vector2f(0.0f, 0.0f);
+	AngleIndicators[1].position = sf::Vector2f(sf::Mouse::getPosition(AppWindow));
 
-	for (auto& i : b2Actors)
-		if (i) i->Tick();
-
-	// Dynamic Text 
-	TimerText->SetText(GameState.GetFormattedElapsedTimeString());
 	PositionDataText->SetText(GameState.GetMouseLocationString());
 	PositionDataText->Text.setPosition(sf::Vector2f(sf::Mouse::getPosition(AppWindow)));
-		
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+
+	TextRenderer.Tick();
+
+	if (!bIsPaused)
 	{
-		if (!GameState.IsGameStarted())
+		GameState.Tick();
+
+		for (auto& i : b2Actors)
+			if (i) i->Tick();
+
+		// Dynamic Text 
+		TimerText->SetText(GameState.GetFormattedElapsedTimeString());
+	
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 		{
-			GameState.StartGame();
-			StartGameTranslateOut->Begin();
-			StartGameAlphaFadeOut->Begin();
+			if (!GameState.IsGameStarted())
+			{
+				GameState.StartGame();
+				StartGameTranslateOut->Begin();
+				StartGameAlphaFadeOut->Begin();
+			}
+			else
+			{
+				GameState.GetPlayer()->Jump();
+			}
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+		{
+			AppWindow.close();
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) //Joy stick plz!
+		{
+			GameState.GetPlayer()->MoveLeft();
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+		{
+
+			GameState.GetPlayer()->MoveRight();
+		}
+
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
+		{
+			if (!bRightMousePressed)
+			{
+				if (!GameState.IsGameOver() && GameState.IsGameStarted())
+				{
+
+				}
+				bRightMousePressed = true;
+			}
 		}
 		else
 		{
-			GameState.GetPlayer()->Jump();
+			bRightMousePressed = false;
 		}
-	}
-	
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-	{
-		AppWindow.close();
-	}
-	
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) //Joy stick plz!
-	{
 
-		GameState.GetPlayer()->MoveLeft();
-	}
-	
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-	{
-
-		GameState.GetPlayer()->MoveRight();
-	}
-	
-	if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
-	{
-		if (!bRightMousePressed)
+		// Middle Button ： Reset
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Middle))
 		{
-			if (!GameState.IsGameOver() && GameState.IsGameStarted())
+			if (!bMiddleMousePressed)
 			{
-				
+				bMiddleMousePressed = true;
+
+				GameState.ResetGame();
+				StartGameTranslateOut->Reset();
+				StartGameAlphaFadeOut->Reset();
 			}
-			bRightMousePressed = true;
 		}
-	}
-	else
-	{
-		bRightMousePressed = false;
-	}
-
-	// Middle Button ： Reset
-	if (sf::Mouse::isButtonPressed(sf::Mouse::Middle))
-	{
-		if (!bMiddleMousePressed)
+		else
 		{
-			bMiddleMousePressed = true;
-
-			GameState.ResetGame();
-			StartGameTranslateOut->Reset();
-			StartGameAlphaFadeOut->Reset();
+			bMiddleMousePressed = false;
 		}
+
+		/// Reserve for remake a charge gauge.
+		//const sf::Vector2f PivotLocation = PivotCache->GetLocation();
+		//const sf::Vector2f MouseLocation = sf::Vector2f(sf::Mouse::getPosition(AppWindow));
+		//const sf::Vector2f OffsetMouseLocation = sf::Vector2f(sf::Mouse::getPosition(AppWindow) - sf::Vector2i(16, 16));
+
+		//ChargeGaugeMax->setPosition(OffsetMouseLocation);
+		//ChargeGaugeMax->setSize(sf::Vector2f(160.0f, 8.0f));
+		//ChargeGaugeProgress->setPosition(OffsetMouseLocation);
+		//ChargeGaugeProgress->setSize(sf::Vector2f(160.0f * percentage, 8.0f));;
+
+		// Update Angle Indicator
+		AngleIndicators[0].position = sf::Vector2f(0.0f, 0.0f);
+		AngleIndicators[1].position = sf::Vector2f(sf::Mouse::getPosition(AppWindow));
 	}
-	else
-	{
-		bMiddleMousePressed = false;
-	}
-	
-
-	/// Reserve for remake a charge gauge.
-	//const sf::Vector2f PivotLocation = PivotCache->GetLocation();
-	//const sf::Vector2f MouseLocation = sf::Vector2f(sf::Mouse::getPosition(AppWindow));
-	//const sf::Vector2f OffsetMouseLocation = sf::Vector2f(sf::Mouse::getPosition(AppWindow) - sf::Vector2i(16, 16));
-
-	//ChargeGaugeMax->setPosition(OffsetMouseLocation);
-	//ChargeGaugeMax->setSize(sf::Vector2f(160.0f, 8.0f));
-	//ChargeGaugeProgress->setPosition(OffsetMouseLocation);
-	//ChargeGaugeProgress->setSize(sf::Vector2f(160.0f * percentage, 8.0f));;
-
-	// Update Angle Indicator
-	AngleIndicators[0].position = sf::Vector2f(0.0f,0.0f);
-	AngleIndicators[1].position = sf::Vector2f(sf::Mouse::getPosition(AppWindow));
 
 	// Rendering
 	AppWindow.clear(sf::Color::Black);
@@ -241,7 +300,7 @@ void Application::Tick(const float DeltaTime)
 
 	for (auto& Itr : TextRenderer.GetTextEffectBundles())
 	{
-		if(Itr.TargetText->IsVisible())
+		if (Itr.TargetText->IsVisible())
 			AppWindow.draw(Itr.TargetText->Text);
 	}
 
@@ -263,11 +322,9 @@ void Application::OnWindowResize()
 	// Apply possible size changes
 	AppWindow.setSize(static_cast<sf::Vector2u>(WindowSize));
 
-
 	// Reset  GUI view
 	AppView = sf::View(sf::FloatRect(0.f, 0.f, WindowSize.x, WindowSize.y));
 	AppWindow.setView(AppView);
-
 
 	// The sidebar should be 180px wide
 	const float width = 180.f;
@@ -282,9 +339,6 @@ void Application::SetupText()
 	TimerText->Text.setPosition(sf::Vector2f(32.0f, ViewportY - 64.0f));
 	TimerText->SetFont(FAssetLoader::GetInstance()->GetFont(RESOURCES_FONT_PIXEL));
 
-	TranslateTestText->SetText("TestTranslate");
-	TranslateTestText->Text.setPosition(sf::Vector2f(ViewportX / 2, ViewportY / 2));
-
 	StartGameText->SetText("Press [Space] to Start");
 	StartGameText->Text.setPosition(sf::Vector2f(ViewportX / 2, ViewportY / 2));
 
@@ -292,11 +346,6 @@ void Application::SetupText()
 	FlashPositionEffect->SetAlpha(0.2f, 0.8f);
 	FlashPositionEffect->SetFadeTime(2.5f);
 	FlashPositionEffect->Begin();
-
-	PingPongEffect->SetDuration(1.0f);
-	PingPongEffect->SetStartLocation(sf::Vector2f(0.0f, 0.0f));
-	PingPongEffect->SetEndLocation(sf::Vector2f(ViewportX / 2, ViewportY / 2));
-	PingPongEffect->Begin();
 
 	StartGameTranslateOut->SetDuration(3.0f);
 	StartGameTranslateOut->SetStartLocation(StartGameText->Text.getPosition());
@@ -310,12 +359,6 @@ void Application::SetupText()
 	e1.Effects.push_back(FlashPositionEffect.get());
 	TextRenderer.Add(e1);
 
-	FTextEffectBundle e2;
-	e2.TargetText = TranslateTestText.get();
-	e2.Effects.push_back(PingPongEffect.get());
-	e2.Effects.push_back(FlashPositionEffect.get());
-	TextRenderer.Add(e2);
-	
 	FTextEffectBundle e3;
 	e3.TargetText = StartGameText.get();
 	e3.Effects.push_back(StartGameTranslateOut.get());
@@ -345,6 +388,16 @@ void Application::SensorOverlap(b2Actor2D* OverlapActor)
 
 	if (OverlapActor->GetObjectName() == "Ball")
 	{
-	
+
 	}
+}
+
+void Application::OnKeyPressed()
+{
+
+}
+
+void Application::OnKeyRelease()
+{
+
 }

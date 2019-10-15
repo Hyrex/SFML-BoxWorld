@@ -55,15 +55,14 @@ void Character::Initialize()
 
 	b2Actor->GetBodyDef()->fixedRotation = true;
 
-	//b2MassData data;
-	//data.mass = 5; //kg
-	//data.center = b2Vec2(0, 0);// no offset.
-	//data.I = 0.0f;
-	//
-	//b2Actor->GetBody()->SetMassData(&data);
-	////b2Actor->BindOnTick(BallTick);
-	//
-	//
+	b2MassData data;
+	data.mass = 1; //kg
+	data.center = b2Vec2(0, 0);// no offset.
+	data.I = 0.0f;
+
+	b2Actor->GetBody()->SetMassData(&data);
+	//b2Actor->BindOnTick(BallTick);
+
 	//// Add foot body fixture.
 	//b2PolygonShape polygonShape;
 	//polygonShape.SetAsBox(0.3, 0.3, b2Vec2(0, -2), 0);
@@ -90,7 +89,6 @@ void Character::MoveLeft()
 		float Impulse = b2Actor->GetBody()->GetMass() * VelocityChange;
 		b2Actor->GetBody()->ApplyLinearImpulse(b2Vec2(Impulse, 0), b2Actor->GetBody()->GetWorldCenter(),true);
 	}
-		
 }
 
 void Character::MoveRight()
@@ -118,4 +116,9 @@ void Character::Jump()
 		float Impulse = b2Actor->GetBody()->GetMass() * VelocityChange;
 		b2Actor->GetBody()->ApplyLinearImpulse(b2Vec2(0, Impulse), b2Actor->GetBody()->GetWorldCenter(), true);
 	}
+}
+
+void Character::UpdateMovement()
+{
+
 }
