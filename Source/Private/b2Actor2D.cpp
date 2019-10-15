@@ -2,7 +2,7 @@
 #include "Application.h"
 #include "AssetLoader.h"
 
-b2Actor2D::b2Actor2D(const std::string Name, EActorShapeType ShapeType, const Eb2ShapeType BodyType, SFML::Vector2f Size, SFML::Vector2f Location, const float Rotation, const bool bIsDynamicBody, const bool bGenerateOverlaps, const bool bAutoActivate)
+b2Actor2D::b2Actor2D(const std::string Name, EActorShapeType ShapeType, const Eb2ShapeType BodyType, sf::Vector2f Size, sf::Vector2f Location, const float Rotation, const bool bIsDynamicBody, const bool bGenerateOverlaps, const bool bAutoActivate)
 {
 	Construct(Name, ShapeType, BodyType, Size, Location, Rotation, bIsDynamicBody, bGenerateOverlaps, bAutoActivate);
 }
@@ -17,7 +17,7 @@ b2Actor2D::~b2Actor2D()
 {
 }
 
-void b2Actor2D::Construct(const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, SFML::Vector2f Size, SFML::Vector2f Location, const float Rotation, const bool bIsDynamicBody, const bool bGenerateOverlaps, const bool bAutoActivate)
+void b2Actor2D::Construct(const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, sf::Vector2f Size, sf::Vector2f Location, const float Rotation, const bool bIsDynamicBody, const bool bGenerateOverlaps, const bool bAutoActivate)
 {
 	ObjectName = Name;
 	ObjectShapes.ShapeType = ShapeType;
@@ -29,7 +29,7 @@ void b2Actor2D::Construct(const std::string Name, const EActorShapeType ShapeTyp
 	if (ObjectShapes.Get())
 	{
 		ObjectShapes.Get()->setOrigin(Size * 0.5f);
-		ObjectShapes.Get()->setFillColor(SFML::Color(128, 128, 128, 255));
+		ObjectShapes.Get()->setFillColor(sf::Color(128, 128, 128, 255));
 		ObjectShapes.Get()->setOutlineThickness(1);
 		ObjectShapes.Get()->setOutlineColor(sf::Color::Black);
 	}
@@ -67,12 +67,12 @@ void b2Actor2D::Construct(const std::string Name, const EActorShapeType ShapeTyp
 	}
 
 	// Debug!
-	const SFML::Vector2f DebugArrowSize = DEBUG_ARROW_SIZE * 0.25f;
-	DebugForward = std::make_unique<SFML::RectangleShape>();
+	const sf::Vector2f DebugArrowSize = DEBUG_ARROW_SIZE * 0.25f;
+	DebugForward = std::make_unique<sf::RectangleShape>();
 	DebugForward->setTexture(FAssetLoader::GetInstance()->GetTexture(RESOURCES_TEXTURE_DEBUG_ARROW));
-	DebugForward->setOrigin(SFML::Vector2f(0, +DebugArrowSize.y/2));
+	DebugForward->setOrigin(sf::Vector2f(0, +DebugArrowSize.y/2));
 	DebugForward->setSize(DebugArrowSize);
-	DebugForward->setFillColor(SFML::Color(255, 0, 0, 255));
+	DebugForward->setFillColor(sf::Color(255, 0, 0, 255));
 
 }
 
@@ -149,30 +149,28 @@ void b2Actor2D::MakeShapeInstance(const EActorShapeType ShapeType)
 {
 	switch (ShapeType)
 	{
-		case EActorShapeType::EST_Rectangle:	ObjectShapes.RectangleShape =	std::make_unique<SFML::RectangleShape>(); 		break;
-		case EActorShapeType::EST_Circle:		ObjectShapes.CircleShape	=	std::make_unique<SFML::CircleShape>();			break;
-		case EActorShapeType::EST_Convex:		ObjectShapes.ConvexShape	=	std::make_unique<SFML::ConvexShape>();			break;
+		case EActorShapeType::EST_Rectangle:	ObjectShapes.RectangleShape =	std::make_unique<sf::RectangleShape>(); 		break;
+		case EActorShapeType::EST_Circle:		ObjectShapes.CircleShape	=	std::make_unique<sf::CircleShape>();			break;
+		case EActorShapeType::EST_Convex:		ObjectShapes.ConvexShape	=	std::make_unique<sf::ConvexShape>();			break;
 	}
 
 	// Prevent spawn at 0,0,0 at being visible before the first tick update.
-	ObjectShapes.Get()->setPosition(SFML::Vector2f(-200, -200));
+	ObjectShapes.Get()->setPosition(sf::Vector2f(-200, -200));
 }
 
-void b2Actor2D::SetShapeProperties(const EActorShapeType ShapeType, SFML::Vector2f Size)
+void b2Actor2D::SetShapeProperties(const EActorShapeType ShapeType, sf::Vector2f Size)
 {
-	using namespace SFML;
-
 	if (!ObjectShapeCache) ObjectShapeCache = ObjectShapes.Get();
 	switch (ShapeType)
 	{
 		case EActorShapeType::EST_Circle:
-			if (CircleShape* const p = dynamic_cast<CircleShape*>(ObjectShapeCache))
+			if (sf::CircleShape* const p = dynamic_cast<sf::CircleShape*>(ObjectShapeCache))
 			{
 				p->setRadius(Size.x/2);
 			}
 			break;
 		case EActorShapeType::EST_Rectangle:
-			if (RectangleShape* const p = dynamic_cast<RectangleShape*>(ObjectShapeCache))
+			if (sf::RectangleShape* const p = dynamic_cast<sf::RectangleShape*>(ObjectShapeCache))
 			{
 				p->setSize(Size);
 			}
@@ -191,7 +189,7 @@ void b2Actor2D::MakeB2ShapeInstance(const Eb2ShapeType BodyType)
 	}
 }
 
-void b2Actor2D::SetB2ShapeProperties(const Eb2ShapeType BodyType, SFML::Vector2f Size)
+void b2Actor2D::SetB2ShapeProperties(const Eb2ShapeType BodyType, sf::Vector2f Size)
 {
 	if (!BodyShape) return;
 	switch (BodyType)
@@ -237,6 +235,6 @@ void b2Actor2D::MakeInactive()
 	BodyInstance->SetActive(false);
 	BodyInstance->SetAwake(false);
 
-	ObjectShapes.Get()->setPosition(SFML::Vector2f(-200, -200));
-	DebugForward->setPosition(SFML::Vector2f(-200, -200));
+	ObjectShapes.Get()->setPosition(sf::Vector2f(-200, -200));
+	DebugForward->setPosition(sf::Vector2f(-200, -200));
 }

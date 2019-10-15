@@ -24,8 +24,8 @@ void FTextLerpLocationEffect::Update()
 	if (ModifyTextTarget && ModifyTextTarget->IsVisible() && !bPaused && bBegin && Duration >= 0.0f && ElapsedTime <= Duration)
 	{
 		const float Delta = ElapsedTime / Duration;
-		const SFML::Vector2f Diff = LocalEndLocation - LocalStartLocation;
-		const SFML::Vector2f ResultLocation = LocalStartLocation + (Diff * Delta);
+		const sf::Vector2f Diff = LocalEndLocation - LocalStartLocation;
+		const sf::Vector2f ResultLocation = LocalStartLocation + (Diff * Delta);
 		ModifyTextTarget->Text.setPosition(ResultLocation);
 	
 		ElapsedTime += DELTA_TIME_STEP;
@@ -37,12 +37,12 @@ void FTextLerpLocationEffect::SetDuration(float NewDuration)
 	Duration = NewDuration;
 }
 
-void FTextLerpLocationEffect::SetStartLocation(SFML::Vector2f NewStartLocation)
+void FTextLerpLocationEffect::SetStartLocation(sf::Vector2f NewStartLocation)
 {
 	LocalStartLocation = NewStartLocation;
 }
 
-void FTextLerpLocationEffect::SetEndLocation(SFML::Vector2f NewEndLocation)
+void FTextLerpLocationEffect::SetEndLocation(sf::Vector2f NewEndLocation)
 {
 	LocalEndLocation = NewEndLocation;
 }
@@ -54,8 +54,8 @@ void FTextPingPongTranslationEffect::Update()
 	if (ModifyTextTarget && ModifyTextTarget->IsVisible() && !bPaused && bBegin && Duration > 0.0f)
 	{
 		const float LerpDelta = ElapsedTime / Duration;
-		const SFML::Vector2f DiffVec = LocalEndLocation - LocalStartLocation;
-		const SFML::Vector2f ResultLocation = LocalStartLocation + (DiffVec * LerpDelta);
+		const sf::Vector2f DiffVec = LocalEndLocation - LocalStartLocation;
+		const sf::Vector2f ResultLocation = LocalStartLocation + (DiffVec * LerpDelta);
 		ModifyTextTarget->Text.setPosition(ResultLocation);
 
 		if (bForward)
@@ -91,12 +91,12 @@ void FTextLerpAlphaEffect::Reset()
 
 	if (ModifyTextTarget)
 	{
-		SFML::Color DefaultFillColor = ModifyTextTarget->Text.getFillColor();
-		DefaultFillColor.a = (SFML::Uint8)(StartAlpha * 255.0f);
+		sf::Color DefaultFillColor = ModifyTextTarget->Text.getFillColor();
+		DefaultFillColor.a = (sf::Uint8)(StartAlpha * 255.0f);
 		ModifyTextTarget->Text.setFillColor(DefaultFillColor);
 
-		SFML::Color DefaultOutlineColor = ModifyTextTarget->Text.getOutlineColor();
-		DefaultOutlineColor.a = (SFML::Uint8)(StartAlpha * 255.0f);
+		sf::Color DefaultOutlineColor = ModifyTextTarget->Text.getOutlineColor();
+		DefaultOutlineColor.a = (sf::Uint8)(StartAlpha * 255.0f);
 		ModifyTextTarget->Text.setOutlineColor(DefaultOutlineColor);
 	}
 }
@@ -110,12 +110,12 @@ void FTextLerpAlphaEffect::Update()
 		const float LerpAlpha = Delta * Diff;
 		const float StartingApha = StartAlpha * 255.0f;
 
-		SFML::Color FillColor = ModifyTextTarget->Text.getFillColor();
-		FillColor.a = (SFML::Uint8)(StartingApha - LerpAlpha);
+		sf::Color FillColor = ModifyTextTarget->Text.getFillColor();
+		FillColor.a = (sf::Uint8)(StartingApha - LerpAlpha);
 		ModifyTextTarget->Text.setFillColor(FillColor);
 
-		SFML::Color OutlineColor = ModifyTextTarget->Text.getOutlineColor();
-		OutlineColor.a = (SFML::Uint8)(StartingApha - LerpAlpha);
+		sf::Color OutlineColor = ModifyTextTarget->Text.getOutlineColor();
+		OutlineColor.a = (sf::Uint8)(StartingApha - LerpAlpha);
 		ModifyTextTarget->Text.setOutlineColor(OutlineColor);
 
 		ElapsedTime += DELTA_TIME_STEP;
@@ -148,12 +148,12 @@ void FTextFlashEffect::Update()
 		const float StartingAlpha = StartAlpha * 255.0f;
 		const float CurrentAlpha = StartingAlpha - LerpAlpha;
 
-		SFML::Color FillColor = ModifyTextTarget->Text.getFillColor();
-		FillColor.a = (SFML::Uint8)(CurrentAlpha);
+		sf::Color FillColor = ModifyTextTarget->Text.getFillColor();
+		FillColor.a = (sf::Uint8)(CurrentAlpha);
 		ModifyTextTarget->Text.setFillColor(FillColor);
 
-		SFML::Color OutlineColor = ModifyTextTarget->Text.getOutlineColor();
-		OutlineColor.a = (SFML::Uint8)(CurrentAlpha);
+		sf::Color OutlineColor = ModifyTextTarget->Text.getOutlineColor();
+		OutlineColor.a = (sf::Uint8)(CurrentAlpha);
 		ModifyTextTarget->Text.setOutlineColor(OutlineColor);
 
 		if(bForward)

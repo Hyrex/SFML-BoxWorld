@@ -2,17 +2,6 @@
 #include "TickHandle.h"
 #include "Application.h"
 
-
-FTickHandle::FTickHandle()
-{
-
-}
-
-FTickHandle::~FTickHandle()
-{
-	LOG("Destructing TickHandle.\n");
-}
-
 void FTickHandle::BeginTick()
 {
 	Tick();

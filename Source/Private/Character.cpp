@@ -33,9 +33,9 @@ void Character::Initialize()
 	SpawnParam.Name = "Box";
 	SpawnParam.ShapeType = EActorShapeType::EST_Rectangle;
 	SpawnParam.BodyType = Eb2ShapeType::ECT_Polygon;
-	SpawnParam.Size = SFML::Vector2f(32, 32);
+	SpawnParam.Size = sf::Vector2f(32, 32);
 	
-	SFML::View ViewPort;
+	sf::View ViewPort;
 	Application::GetInstance()->GetWindow()->getViewport(ViewPort);
 	
 	SpawnParam.Location = ViewPort.getSize() / 2.0f;
@@ -45,8 +45,8 @@ void Character::Initialize()
 	SpawnParam.bAutoActivate = true;
 
 	b2Actor = std::move(std::make_unique<b2Actor2D>(SpawnParam));
-	b2Actor->GetShape()->setOutlineColor(SFML::Color::White);
-	b2Actor->GetShape()->setFillColor(SFML::Color::Black);
+	b2Actor->GetShape()->setOutlineColor(sf::Color::White);
+	b2Actor->GetShape()->setFillColor(sf::Color::Black);
 
 	std::cout << "X: " << b2Actor->GetBody()->GetLinearVelocity().x << " Y: " << b2Actor->GetBody()->GetLinearVelocity().y << std::endl;
 	b2Actor->GetFixtureDefinition()->density = 0.83f;

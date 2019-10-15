@@ -21,7 +21,7 @@ struct FRenderWindowData
 	
 	std::string WindowName = "BoxWorld";
 
-	inline SFML::VideoMode	GetVideoModeFromData()	{	return SFML::VideoMode(Width, Height, BitsPerPixel);	}
+	inline sf::VideoMode	GetVideoModeFromData()	{	return sf::VideoMode(Width, Height, BitsPerPixel);	}
 	inline std::string		GetWindowName()			{	return WindowName;	}
 };
 
@@ -37,7 +37,7 @@ public:
 
 	b2World* GetWorld() const { return World.get(); }
 	FTickHandle& GetTickHandle() { return TickHandle;  }
-	SFML::RenderWindow* GetWindow() { return &AppWindow; }
+	sf::RenderWindow* GetWindow() { return &AppWindow; }
 
 private:
 
@@ -53,19 +53,19 @@ private:
 	FTextManager TextRenderer;
 
 	FRenderWindowData RenderWindowData;
-	SFML::RenderWindow AppWindow;
-	SFML::View AppView;
-	SFML::Music* BGM;
+	sf::RenderWindow AppWindow;
+	sf::View AppView;
+	sf::Music* BGM;
 	
 	//Box2D
 	b2Vec2 Gravity; 
 	std::shared_ptr<b2World> World;
 	std::unique_ptr<b2Actor2DContactListener> b2ActorContactListner;
 
-	std::vector<std::unique_ptr<SFML::Shape>> RenderShapes;
+	std::vector<std::unique_ptr<sf::Shape>> RenderShapes;
 	std::vector<std::unique_ptr<b2Actor2D>> b2Actors;
 
-	SFML::Vertex AngleIndicators[2];
+	sf::Vertex AngleIndicators[2];
 
 	bool bLeftPressed = false;
 	bool bRightPressed = false;

@@ -1,9 +1,8 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
-#include <sstream>
+
 #include "Character.h"
-#include "Defines.h"
 #include "Interface.h"
 
 class Application;

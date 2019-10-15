@@ -57,76 +57,76 @@ void Application::Initialize()
 	AppWindow.resetGLStates();
 	AppWindow.setFramerateLimit(60);
 
-	AppView = SFML::View(AppWindow.getDefaultView());
+	AppView = sf::View(AppWindow.getDefaultView());
 
 	// Border creations
 	const float BorderThickness = 16.0f;
 	const float ViewportX = (float)RenderWindowData.Width;
 	const float ViewportY = (float)RenderWindowData.Height;
-	const SFML::Vector2f XBorder(ViewportX, BorderThickness);
-	const SFML::Vector2f YBorder(BorderThickness, ViewportY);
-	const SFML::Vector2f UBorderLocation(ViewportX * 0.5f, BorderThickness * 0.5f);
-	const SFML::Vector2f DBorderLocation(ViewportX * 0.5f, ViewportY - BorderThickness * 0.5f);
-	const SFML::Vector2f LBorderLocation(BorderThickness * 0.5f, ViewportY * 0.5f);
-	const SFML::Vector2f RBorderLocation(ViewportX - BorderThickness * 0.5f, ViewportY * 0.5f);
+	const sf::Vector2f XBorder(ViewportX, BorderThickness);
+	const sf::Vector2f YBorder(BorderThickness, ViewportY);
+	const sf::Vector2f UBorderLocation(ViewportX * 0.5f, BorderThickness * 0.5f);
+	const sf::Vector2f DBorderLocation(ViewportX * 0.5f, ViewportY - BorderThickness * 0.5f);
+	const sf::Vector2f LBorderLocation(BorderThickness * 0.5f, ViewportY * 0.5f);
+	const sf::Vector2f RBorderLocation(ViewportX - BorderThickness * 0.5f, ViewportY * 0.5f);
 
 	// Collapsed function body. Transferring ownership of local unique ptr to the container
-	auto b2ActorInit = [this](std::unique_ptr<b2Actor2D>& p, const SFML::Color c) ->void 
+	auto b2ActorInit = [this](std::unique_ptr<b2Actor2D>& p, const sf::Color c) ->void 
 	{
 		p->GetShape()->setOutlineThickness(-1);
-		p->GetShape()->setOutlineColor(SFML::Color::Black);
+		p->GetShape()->setOutlineColor(sf::Color::Black);
 		p->GetShape()->setFillColor(c);
 		b2Actors.push_back(move(p));
 	};
 
 	std::unique_ptr<b2Actor2D> TopBorder = std::make_unique<b2Actor2D>("TopBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, XBorder, UBorderLocation);
-	b2ActorInit(TopBorder, SFML::Color(100, 100, 100));
+	b2ActorInit(TopBorder, sf::Color(100, 100, 100));
 
 	std::unique_ptr<b2Actor2D> LeftBorder = std::make_unique<b2Actor2D>("LeftBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, YBorder, LBorderLocation);
-	b2ActorInit(LeftBorder , SFML::Color(100, 100, 100) );
+	b2ActorInit(LeftBorder , sf::Color(100, 100, 100) );
 
 	std::unique_ptr<b2Actor2D> RightBorder = std::make_unique<b2Actor2D>("RightBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, YBorder, RBorderLocation);
-	b2ActorInit(RightBorder, SFML::Color(100, 100, 100));
+	b2ActorInit(RightBorder, sf::Color(100, 100, 100));
 
 	std::unique_ptr<b2Actor2D> BotBorder = std::make_unique<b2Actor2D>("BotBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, XBorder, DBorderLocation);
-	b2ActorInit(BotBorder, SFML::Color(100, 100, 100));
+	b2ActorInit(BotBorder, sf::Color(100, 100, 100));
 
 	for (int i = 0; i < 2; i++)
 	{
-		AngleIndicators[i].color = (i == 1) ? SFML::Color::Cyan : SFML::Color::Blue;
+		AngleIndicators[i].color = (i == 1) ? sf::Color::Cyan : sf::Color::Blue;
 	}
 		
 	// Board
 	const float offsetX = ViewportX * 0.98f;
 	const float offsetY = ViewportY * 0.35f;
-	const SFML::Vector2f boardSize(8.0f, 200.0f);
-	const SFML::Vector2f boardPos(ViewportX * 0.98f, ViewportY * 0.35f);
+	const sf::Vector2f boardSize(8.0f, 200.0f);
+	const sf::Vector2f boardPos(ViewportX * 0.98f, ViewportY * 0.35f);
 	
-	const SFML::Vector2f netEdgeSize(8.0f, 90.0f);
-	const SFML::Vector2f netEdgePos(offsetX - 48.0f + (netEdgeSize.y / 2 * sin(-0.174533f)), offsetY + 16.0f);
+	const sf::Vector2f netEdgeSize(8.0f, 90.0f);
+	const sf::Vector2f netEdgePos(offsetX - 48.0f + (netEdgeSize.y / 2 * sin(-0.174533f)), offsetY + 16.0f);
 
-	const SFML::Vector2f sensorSize(48.0f, 48.0f);
-	const SFML::Vector2f sensorPos((boardPos.x + netEdgePos.x) / 2, netEdgePos.y);
+	const sf::Vector2f sensorSize(48.0f, 48.0f);
+	const sf::Vector2f sensorPos((boardPos.x + netEdgePos.x) / 2, netEdgePos.y);
 		
 	std::unique_ptr<b2Actor2D> ScoreSensor = std::make_unique<b2Actor2D>("sensor", EActorShapeType::EST_Circle, Eb2ShapeType::ECT_Circle, sensorSize, sensorPos, 0.0f, false, true);
 	ScoreSensor->BindOnBeginoverlap(SensorOverlap);
-	b2ActorInit(ScoreSensor, SFML::Color(255, 255, 0, 100));
+	b2ActorInit(ScoreSensor, sf::Color(255, 255, 0, 100));
 
 	SetupText();
 }
 
 void Application::Tick(const float DeltaTime)
 {
-	SFML::Event WindowEvent;
+	sf::Event WindowEvent;
 
 	// Delay PollEvent, avoid to use
 	while (AppWindow.pollEvent(WindowEvent));
 	{
-		if (WindowEvent.type == SFML::Event::Closed)
+		if (WindowEvent.type == sf::Event::Closed)
 		{
 			AppWindow.close();		
 		}
-		else if (WindowEvent.type == SFML::Event::Resized)
+		else if (WindowEvent.type == sf::Event::Resized)
 		{
 			OnWindowResize();
 		}
@@ -143,9 +143,9 @@ void Application::Tick(const float DeltaTime)
 	// Dynamic Text 
 	TimerText->SetText(GameState.GetFormattedElapsedTimeString());
 	PositionDataText->SetText(GameState.GetMouseLocationString());
-	PositionDataText->Text.setPosition(SFML::Vector2f(SFML::Mouse::getPosition(AppWindow)));
+	PositionDataText->Text.setPosition(sf::Vector2f(sf::Mouse::getPosition(AppWindow)));
 		
-	if (SFML::Keyboard::isKeyPressed(SFML::Keyboard::Space))
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 	{
 		if (!GameState.IsGameStarted())
 		{
@@ -159,24 +159,24 @@ void Application::Tick(const float DeltaTime)
 		}
 	}
 	
-	if (SFML::Keyboard::isKeyPressed(SFML::Keyboard::Escape))
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
 	{
 		AppWindow.close();
 	}
 	
-	if (SFML::Keyboard::isKeyPressed(SFML::Keyboard::A)) //Joy stick plz!
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) //Joy stick plz!
 	{
 
 		GameState.GetPlayer()->MoveLeft();
 	}
 	
-	if (SFML::Keyboard::isKeyPressed(SFML::Keyboard::D))
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 	{
 
 		GameState.GetPlayer()->MoveRight();
 	}
 	
-	if (SFML::Mouse::isButtonPressed(SFML::Mouse::Right))
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
 	{
 		if (!bRightMousePressed)
 		{
@@ -193,7 +193,7 @@ void Application::Tick(const float DeltaTime)
 	}
 
 	// Middle Button ： Reset
-	if (SFML::Mouse::isButtonPressed(SFML::Mouse::Middle))
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Middle))
 	{
 		if (!bMiddleMousePressed)
 		{
@@ -211,21 +211,21 @@ void Application::Tick(const float DeltaTime)
 	
 
 	/// Reserve for remake a charge gauge.
-	//const SFML::Vector2f PivotLocation = PivotCache->GetLocation();
-	//const SFML::Vector2f MouseLocation = SFML::Vector2f(SFML::Mouse::getPosition(AppWindow));
-	//const SFML::Vector2f OffsetMouseLocation = SFML::Vector2f(SFML::Mouse::getPosition(AppWindow) - SFML::Vector2i(16, 16));
+	//const sf::Vector2f PivotLocation = PivotCache->GetLocation();
+	//const sf::Vector2f MouseLocation = sf::Vector2f(sf::Mouse::getPosition(AppWindow));
+	//const sf::Vector2f OffsetMouseLocation = sf::Vector2f(sf::Mouse::getPosition(AppWindow) - sf::Vector2i(16, 16));
 
 	//ChargeGaugeMax->setPosition(OffsetMouseLocation);
-	//ChargeGaugeMax->setSize(SFML::Vector2f(160.0f, 8.0f));
+	//ChargeGaugeMax->setSize(sf::Vector2f(160.0f, 8.0f));
 	//ChargeGaugeProgress->setPosition(OffsetMouseLocation);
-	//ChargeGaugeProgress->setSize(SFML::Vector2f(160.0f * percentage, 8.0f));;
+	//ChargeGaugeProgress->setSize(sf::Vector2f(160.0f * percentage, 8.0f));;
 
 	// Update Angle Indicator
-	AngleIndicators[0].position = SFML::Vector2f(0.0f,0.0f);
-	AngleIndicators[1].position = SFML::Vector2f(SFML::Mouse::getPosition(AppWindow));
+	AngleIndicators[0].position = sf::Vector2f(0.0f,0.0f);
+	AngleIndicators[1].position = sf::Vector2f(sf::Mouse::getPosition(AppWindow));
 
 	// Rendering
-	AppWindow.clear(SFML::Color::Black);
+	AppWindow.clear(sf::Color::Black);
 
 	for (auto& Itr : RenderShapes)
 		AppWindow.draw(*Itr);
@@ -245,7 +245,7 @@ void Application::Tick(const float DeltaTime)
 			AppWindow.draw(Itr.TargetText->Text);
 	}
 
-	AppWindow.draw(AngleIndicators, 2, SFML::Lines);
+	AppWindow.draw(AngleIndicators, 2, sf::Lines);
 	AppWindow.display();
 }
 
@@ -261,11 +261,11 @@ void Application::OnWindowResize()
 		WindowSize.y = (float)RenderWindowData.Height;
 
 	// Apply possible size changes
-	AppWindow.setSize(static_cast<SFML::Vector2u>(WindowSize));
+	AppWindow.setSize(static_cast<sf::Vector2u>(WindowSize));
 
 
 	// Reset  GUI view
-	AppView = SFML::View(SFML::FloatRect(0.f, 0.f, WindowSize.x, WindowSize.y));
+	AppView = sf::View(sf::FloatRect(0.f, 0.f, WindowSize.x, WindowSize.y));
 	AppWindow.setView(AppView);
 
 
@@ -279,14 +279,14 @@ void Application::SetupText()
 	const float ViewportY = (float)RenderWindowData.Height;
 
 	// Static String Texts
-	TimerText->Text.setPosition(SFML::Vector2f(32.0f, ViewportY - 64.0f));
+	TimerText->Text.setPosition(sf::Vector2f(32.0f, ViewportY - 64.0f));
 	TimerText->SetFont(FAssetLoader::GetInstance()->GetFont(RESOURCES_FONT_PIXEL));
 
 	TranslateTestText->SetText("TestTranslate");
-	TranslateTestText->Text.setPosition(SFML::Vector2f(ViewportX / 2, ViewportY / 2));
+	TranslateTestText->Text.setPosition(sf::Vector2f(ViewportX / 2, ViewportY / 2));
 
 	StartGameText->SetText("Press [Space] to Start");
-	StartGameText->Text.setPosition(SFML::Vector2f(ViewportX / 2, ViewportY / 2));
+	StartGameText->Text.setPosition(sf::Vector2f(ViewportX / 2, ViewportY / 2));
 
 	// Effects
 	FlashPositionEffect->SetAlpha(0.2f, 0.8f);
@@ -294,13 +294,13 @@ void Application::SetupText()
 	FlashPositionEffect->Begin();
 
 	PingPongEffect->SetDuration(1.0f);
-	PingPongEffect->SetStartLocation(SFML::Vector2f(0.0f, 0.0f));
-	PingPongEffect->SetEndLocation(SFML::Vector2f(ViewportX / 2, ViewportY / 2));
+	PingPongEffect->SetStartLocation(sf::Vector2f(0.0f, 0.0f));
+	PingPongEffect->SetEndLocation(sf::Vector2f(ViewportX / 2, ViewportY / 2));
 	PingPongEffect->Begin();
 
 	StartGameTranslateOut->SetDuration(3.0f);
 	StartGameTranslateOut->SetStartLocation(StartGameText->Text.getPosition());
-	StartGameTranslateOut->SetEndLocation(StartGameText->Text.getPosition() + SFML::Vector2f(0, -500.0f));
+	StartGameTranslateOut->SetEndLocation(StartGameText->Text.getPosition() + sf::Vector2f(0, -500.0f));
 
 	StartGameAlphaFadeOut->SetFadeTime(2.0f);
 	StartGameAlphaFadeOut->SetAlpha(1.0f, 0.0f);

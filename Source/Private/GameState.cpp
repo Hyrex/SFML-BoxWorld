@@ -1,5 +1,7 @@
 #include "GameState.h"
+#include "Defines.h"
 #include "Application.h"
+#include <sstream>
 
 FGameState::FGameState()
 {
@@ -9,7 +11,7 @@ FGameState::FGameState()
 
 std::string FGameState::GetMouseLocationString() const
 {
-	SFML::Vector2f v = SFML::Vector2f(SFML::Mouse::getPosition(*Application::GetInstance()->GetWindow()));
+	sf::Vector2f v = sf::Vector2f(sf::Mouse::getPosition(*Application::GetInstance()->GetWindow()));
 	float x = v.x; float y = v.y;
 	std::ostringstream ss; ss << x << "," << y; return ss.str();
 }

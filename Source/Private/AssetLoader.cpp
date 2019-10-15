@@ -34,19 +34,19 @@ bool FAssetLoader::LoadResources()
 	return bResult;
 }
 
-SFML::Texture* FAssetLoader::GetTexture(const std::string Name)
+sf::Texture* FAssetLoader::GetTexture(const std::string Name)
 {
 	auto Iterator = GetInstance()->TextureLibrary.find(Name);
 	return (Iterator != GetInstance()->TextureLibrary.end()) ? Iterator->second.get() : nullptr ;
 }
 
-SFML::Font* FAssetLoader::GetFont(const std::string Name)
+sf::Font* FAssetLoader::GetFont(const std::string Name)
 {
 	auto Iterator = GetInstance()->FontLibrary.find(Name);
 	return (Iterator != GetInstance()->FontLibrary.end()) ? Iterator->second.get() : nullptr;
 }
 
-SFML::Music* FAssetLoader::GetMusic(const std::string Name)
+sf::Music* FAssetLoader::GetMusic(const std::string Name)
 {
 	auto Iterator = GetInstance()->MusicLibrary.find(Name);
 	return (Iterator != GetInstance()->MusicLibrary.end()) ? Iterator->second.get() : nullptr;
@@ -54,39 +54,39 @@ SFML::Music* FAssetLoader::GetMusic(const std::string Name)
 
 bool FAssetLoader::LoadTexture(const std::string FileName)
 {
-	std::unique_ptr<SFML::Texture> pNewTexture  = std::make_unique<SFML::Texture>();
+	std::unique_ptr<sf::Texture> pNewTexture  = std::make_unique<sf::Texture>();
 	bool bResult = pNewTexture->loadFromFile(FileName);
 	LOAD_CHECK(bResult, FileName);
 
 	if (bResult)
 	{
-		TextureLibrary.insert(std::pair<const std::string, std::unique_ptr<SFML::Texture>>(FileName, std::move(pNewTexture)));
+		TextureLibrary.insert(std::pair<const std::string, std::unique_ptr<sf::Texture>>(FileName, std::move(pNewTexture)));
 	}
 	return bResult;
 }
 
 bool FAssetLoader::LoadFont(const std::string FileName)
 {
-	std::unique_ptr<SFML::Font> pNewFont = std::make_unique<SFML::Font>();
+	std::unique_ptr<sf::Font> pNewFont = std::make_unique<sf::Font>();
 	bool bResult = pNewFont->loadFromFile(FileName);
 	LOAD_CHECK(bResult, FileName);
 	
 	if (bResult)
 	{
-		FontLibrary.insert(std::pair<const std::string, std::unique_ptr<SFML::Font>>(FileName, std::move(pNewFont)));
+		FontLibrary.insert(std::pair<const std::string, std::unique_ptr<sf::Font>>(FileName, std::move(pNewFont)));
 	}
 	return bResult;
 }
 
 bool FAssetLoader::LoadMusic(const std::string FileName)
 {
-	std::unique_ptr<SFML::Music> pNewMusic = std::make_unique<SFML::Music>();
+	std::unique_ptr<sf::Music> pNewMusic = std::make_unique<sf::Music>();
 	bool bResult = pNewMusic->openFromFile(FileName);
 	LOAD_CHECK(bResult, FileName);
 
 	if (bResult)
 	{
-		MusicLibrary.insert(std::pair<const std::string, std::unique_ptr<SFML::Music>>(FileName, std::move(pNewMusic)));
+		MusicLibrary.insert(std::pair<const std::string, std::unique_ptr<sf::Music>>(FileName, std::move(pNewMusic)));
 	}
 	return bResult;
 }

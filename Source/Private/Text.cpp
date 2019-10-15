@@ -9,7 +9,7 @@ FText::FText()
 	Text.setCharacterSize(TEXT_SIZE_M);
 }
 
-void FText::SetFont(SFML::Font* NewFont)
+void FText::SetFont(sf::Font* NewFont)
 {
 	Font = NewFont;
 	Text.setFont(*Font);

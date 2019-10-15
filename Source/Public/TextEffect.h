@@ -32,14 +32,14 @@ public:
 	virtual void Update() override;
 
 	void SetDuration(float NewDuration);
-	void SetStartLocation(SFML::Vector2f NewStartLocation);
-	void SetEndLocation(SFML::Vector2f NewEndLocation);
+	void SetStartLocation(sf::Vector2f NewStartLocation);
+	void SetEndLocation(sf::Vector2f NewEndLocation);
 
 protected:
 	float ElapsedTime = 0.0f;
 	float Duration = 0.0f;
-	SFML::Vector2f LocalStartLocation;
-	SFML::Vector2f LocalEndLocation;
+	sf::Vector2f LocalStartLocation;
+	sf::Vector2f LocalEndLocation;
 };
 
 class FTextPingPongTranslationEffect : public FTextLerpLocationEffect
