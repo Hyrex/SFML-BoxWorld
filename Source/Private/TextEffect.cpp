@@ -17,6 +17,9 @@ void FTextLerpLocationEffect::Reset()
 	bBegin = false;
 	bPaused = false;
 	ElapsedTime = 0;
+
+	if(ModifyTextTarget)
+		ModifyTextTarget->Text.setPosition(LocalStartLocation);
 }
 
 void FTextLerpLocationEffect::Update()
