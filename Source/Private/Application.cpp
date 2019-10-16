@@ -1,7 +1,9 @@
 ﻿#include <SFML/Audio.hpp>
-
+#include <SFML/Graphics.hpp>
 #include "Application.h"
+#include "Actor.h"
 #include "Character.h"
+#include "StaticBlockActor.h"
 #include "b2Actor2D.h"
 #include "b2Actor2DContactListener.h"
 #include "TextManager.h"
@@ -71,49 +73,29 @@ void Application::Initialize()
 	const sf::Vector2f LBorderLocation(BorderThickness * 0.5f, ViewportY * 0.5f);
 	const sf::Vector2f RBorderLocation(ViewportX - BorderThickness * 0.5f, ViewportY * 0.5f);
 
-	// Collapsed function body. Transferring ownership of local unique ptr to the container
-	auto FloorActorsInit = [this](std::unique_ptr<b2Actor2D>& p, const sf::Color c) ->void
-	{
-		p->GetShape()->setOutlineThickness(-1);
-		p->GetShape()->setOutlineColor(sf::Color::Black);
-		p->GetShape()->setFillColor(c);
-		p->SetGenerateOverlap(true);
-		p->GetFixture()->SetUserData((void*)GAMETAG_STATIC_OBJECT);
-		b2Actors.push_back(move(p));
-	};
+	std::unique_ptr<StaticBlockActor> TopBorder = std::make_unique<StaticBlockActor>("TopBorderActor", GAMETAG_STATIC_OBJECT);
+	TopBorder->Construct(XBorder, UBorderLocation);
+	Actors.push_back(std::move(TopBorder));
 
-	std::unique_ptr<b2Actor2D> TopBorder = std::make_unique<b2Actor2D>("TopBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, XBorder, UBorderLocation);
-	FloorActorsInit(TopBorder, sf::Color(100, 100, 100));
+	std::unique_ptr<StaticBlockActor> LeftBorder = std::make_unique<StaticBlockActor>("LeftBorder", GAMETAG_STATIC_OBJECT);
+	LeftBorder->Construct(YBorder, LBorderLocation);
+	Actors.push_back(std::move(LeftBorder));
 
-	std::unique_ptr<b2Actor2D> LeftBorder = std::make_unique<b2Actor2D>("LeftBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, YBorder, LBorderLocation);
-	FloorActorsInit(LeftBorder, sf::Color(100, 100, 100));
+	std::unique_ptr<StaticBlockActor> RightBorder = std::make_unique<StaticBlockActor>("RightBorder", GAMETAG_STATIC_OBJECT);
+	RightBorder->Construct(YBorder, RBorderLocation);
+	Actors.push_back(std::move(RightBorder));
 
-	std::unique_ptr<b2Actor2D> RightBorder = std::make_unique<b2Actor2D>("RightBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, YBorder, RBorderLocation);
-	FloorActorsInit(RightBorder, sf::Color(100, 100, 100));
+	std::unique_ptr<StaticBlockActor> BotBorder = std::make_unique<StaticBlockActor>("BotBorder", GAMETAG_STATIC_OBJECT);
+	BotBorder->Construct(XBorder, DBorderLocation);
+	Actors.push_back(std::move(BotBorder));
 
-	std::unique_ptr<b2Actor2D> BotBorder = std::make_unique<b2Actor2D>("BotBorder", EActorShapeType::EST_Rectangle, Eb2ShapeType::ECT_Polygon, XBorder, DBorderLocation);
-	FloorActorsInit(BotBorder, sf::Color(100, 100, 100));
+	/// ISSUE 6 : All position are incorrect now!
+	/// ISSUE 7 : Character not falling? Fix it.
 
 	for (int i = 0; i < 2; i++)
 	{
 		AngleIndicators[i].color = (i == 1) ? sf::Color::Cyan : sf::Color::Blue;
 	}
-
-	// Board
-	const float offsetX = ViewportX * 0.98f;
-	const float offsetY = ViewportY * 0.35f;
-	const sf::Vector2f boardSize(8.0f, 200.0f);
-	const sf::Vector2f boardPos(ViewportX * 0.98f, ViewportY * 0.35f);
-
-	const sf::Vector2f netEdgeSize(8.0f, 90.0f);
-	const sf::Vector2f netEdgePos(offsetX - 48.0f + (netEdgeSize.y / 2 * sin(-0.174533f)), offsetY + 16.0f);
-
-	const sf::Vector2f sensorSize(48.0f, 48.0f);
-	const sf::Vector2f sensorPos((boardPos.x + netEdgePos.x) / 2, netEdgePos.y);
-
-	std::unique_ptr<b2Actor2D> ScoreSensor = std::make_unique<b2Actor2D>("sensor", EActorShapeType::EST_Circle, Eb2ShapeType::ECT_Circle, sensorSize, sensorPos, 0.0f, false, true);
-	ScoreSensor->BindOnBeginoverlap(SensorOverlap);
-	FloorActorsInit(ScoreSensor, sf::Color(255, 255, 0, 100));
 
 	SetupText();
 }
@@ -192,7 +174,7 @@ void Application::Tick(const float DeltaTime)
 	AngleIndicators[0].position = sf::Vector2f(0.0f, 0.0f);
 	AngleIndicators[1].position = sf::Vector2f(sf::Mouse::getPosition(AppWindow));
 
-	PositionDataText->SetText(GameState.GetMouseLocationString());
+	PositionDataText->SetText(GameState.GetMouseLocationString() + (bIsPaused ? " [Lost Focus]" : " [Has Focus]"));
 
 	TextRenderer.Tick();
 
@@ -201,6 +183,9 @@ void Application::Tick(const float DeltaTime)
 		GameState.Tick();
 
 		for (auto& i : b2Actors)
+			if (i) i->Tick();
+
+		for (auto& i : Actors)
 			if (i) i->Tick();
 
 		// Dynamic Text 
@@ -299,16 +284,6 @@ void Application::Tick(const float DeltaTime)
 			bMiddleMousePressed = false;
 		}
 
-		/// Reserve for remake a charge gauge.
-		//const sf::Vector2f PivotLocation = PivotCache->GetLocation();
-		//const sf::Vector2f MouseLocation = sf::Vector2f(sf::Mouse::getPosition(AppWindow));
-		//const sf::Vector2f OffsetMouseLocation = sf::Vector2f(sf::Mouse::getPosition(AppWindow) - sf::Vector2i(16, 16));
-
-		//ChargeGaugeMax->setPosition(OffsetMouseLocation);
-		//ChargeGaugeMax->setSize(sf::Vector2f(160.0f, 8.0f));
-		//ChargeGaugeProgress->setPosition(OffsetMouseLocation);
-		//ChargeGaugeProgress->setSize(sf::Vector2f(160.0f * percentage, 8.0f));;
-
 		// Update Angle Indicator
 		AngleIndicators[0].position = sf::Vector2f(0.0f, 0.0f);
 		AngleIndicators[1].position = sf::Vector2f(sf::Mouse::getPosition(AppWindow));
@@ -317,17 +292,16 @@ void Application::Tick(const float DeltaTime)
 	// Rendering
 	AppWindow.clear(sf::Color::Black);
 
-	for (auto& Itr : RenderShapes)
-		AppWindow.draw(*Itr);
-
 	for (auto& Itr : b2Actors)
 		AppWindow.draw(*Itr->GetShape());
 
 	if (GameState.GetPlayer()->IsInitialized())
 	{
-		AppWindow.draw(*GameState.GetPlayer()->Getb2Actor()->GetShape());
-		AppWindow.draw(*GameState.GetPlayer()->Getb2Actor()->DebugForward);
-		AppWindow.draw(*GameState.GetPlayer()->GetFootBox());
+		AppWindow.draw(*GameState.GetPlayer()->Getb2Component().Component->GetDebugForward());
+		for (int i = 0 ; i < GameState.GetPlayer()->GetShapeCount(); ++i)
+		{
+			AppWindow.draw(*GameState.GetPlayer()->GetShapeAtIndex(i));
+		}
 	}
 
 	for (auto& Itr : TextRenderer.GetTextEffectBundles())
@@ -335,6 +309,11 @@ void Application::Tick(const float DeltaTime)
 		if (Itr.TargetText->IsVisible())
 			AppWindow.draw(Itr.TargetText->Text);
 	}
+
+	//wip
+	for (auto& Itr : Actors)
+		AppWindow.draw(*Itr->GetShapeAtIndex(0)); /// ISSUE 3: This might return nullptr, and *nullptr is crash
+
 
 	AppWindow.draw(AngleIndicators, 2, sf::Lines);
 	AppWindow.display();
@@ -402,16 +381,6 @@ void Application::SetupText()
 	FTextEffectBundle e4;
 	e4.TargetText = TimerText.get();
 	TextRenderer.Add(e4);
-}
-
-void Application::SensorOverlap(b2Actor2D* Actor, b2Actor2D* OverlapActor, void* UserData, void* OtherUserData)
-{
-	if (!Application::GetInstance()->GameState.IsGameStarted()) return;
-
-	if (OverlapActor->GetObjectName() == "Ball")
-	{
-
-	}
 }
 
 void Application::OnKeyPressed()

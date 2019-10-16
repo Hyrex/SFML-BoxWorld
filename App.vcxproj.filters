@@ -59,6 +59,12 @@
     <ClInclude Include="Source\Public\b2Actor2DContactListener.h">
       <Filter>Source\Public\GameObject</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Public\Actor.h">
+      <Filter>Source\Public</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Public\StaticBlockActor.h">
+      <Filter>Source\Public</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Private\Application.cpp">
@@ -92,6 +98,12 @@
       <Filter>Source\Private</Filter>
     </ClCompile>
     <ClCompile Include="Source\Private\TextEffect.cpp">
+      <Filter>Source\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Private\Actor.cpp">
+      <Filter>Source\Private</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Private\StaticBlockActor.cpp">
       <Filter>Source\Private</Filter>
     </ClCompile>
   </ItemGroup>

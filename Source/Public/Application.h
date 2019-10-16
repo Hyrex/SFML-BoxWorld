@@ -10,6 +10,7 @@
 #include "TextManager.h"
 #include "Defines.h"
 
+class Actor;
 class b2Actor2D;
 class b2Actor2DContactListener;
 
@@ -42,7 +43,6 @@ public:
 private:
 
 	Application();
-	static void SensorOverlap(b2Actor2D* Actor, b2Actor2D* OverlapActor, void* UserData, void* OtherUserData);
 
 	void OnKeyPressed();
 	void OnKeyRelease();
@@ -64,8 +64,10 @@ private:
 	std::shared_ptr<b2World>					World;
 	std::unique_ptr<b2Actor2DContactListener>	b2ActorContactListner;
 
-	std::vector<std::unique_ptr<sf::Shape>>		RenderShapes;
 	std::vector<std::unique_ptr<b2Actor2D>>		b2Actors;
+
+	// wip
+	std::vector<std::unique_ptr<Actor>>			Actors;
 
 	sf::Vertex AngleIndicators[2];
 

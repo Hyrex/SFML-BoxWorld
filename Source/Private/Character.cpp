@@ -2,9 +2,9 @@
 #include "Application.h"
 #include "Defines.h"
 
-Character::Character()
+Character::Character(std::string Name, int ID)
 {
-
+	Actor(Name, ID);
 }
 
 Character::~Character()
@@ -16,71 +16,74 @@ void Character::Initialize()
 	if (bInitialized)
 		return;
 
-	// Construct data to parse.
-	Fb2ActorSpawnParam SpawnParam;
-	SpawnParam.Name = "Box";
-	SpawnParam.ShapeType = EActorShapeType::EST_Rectangle;
-	SpawnParam.BodyType = Eb2ShapeType::ECT_Polygon;
-	SpawnParam.Size = sf::Vector2f(32, 32);
+	// Visual - MainBody
+	sf::RectangleShape* CharacterBody = new sf::RectangleShape();
+	CharacterBody->setSize(UNIT_VECTOR);
+	CharacterBody->setOrigin(UNIT_VECTOR * 0.5f);
+	CharacterBody->setFillColor(sf::Color::Transparent);
+	CharacterBody->setOutlineThickness(1);
+	CharacterBody->setOutlineColor(sf::Color::White);
+	RegisterShape(FShapeID(CharacterBody, 1)); 
+	
+	// Box2D - MainBody
+	PhysicComponent* BodyComponent = new PhysicComponent("Box-BodyComponent");
+	BodyComponent->SetOwningParent(this);
 
 	sf::View ViewPort;
 	Application::GetInstance()->GetWindow()->getViewport(ViewPort);
 
-	SpawnParam.Location = ViewPort.getSize() / 2.0f;
-	SpawnParam.Rotation = 0.0f;
-	SpawnParam.bIsDynamicBody = true;
-	SpawnParam.bIsSensor = false;
-	SpawnParam.bGenerateOverlaps = true; /// FIXME ISSUE # 1 true to generate overlap as sensor but fall thru the world, true stay in the world but no event called.
-	SpawnParam.bAutoActivate = true;
+	b2BodyDef CharacterBodyDef;
+	CharacterBodyDef.fixedRotation = true;
+	CharacterBodyDef.position.Set(UNIT_SFML_TO_BOX2D(ViewPort.getSize().x * 0.5f), UNIT_SFML_TO_BOX2D(ViewPort.getSize().y * 0.5f));
+	BodyComponent->CreateBody(&CharacterBodyDef);
 
-	b2Actor = std::move(std::make_unique<b2Actor2D>(SpawnParam));
-	b2Actor->GetShape()->setOutlineColor(sf::Color::White);
-	b2Actor->GetShape()->setFillColor(sf::Color::Transparent);
+	b2PolygonShape BodyShape;
+	BodyShape.SetAsBox(UNIT_SFML_TO_BOX2D(UNIT_VECTOR.x * 0.5f), UNIT_SFML_TO_BOX2D(UNIT_VECTOR.y * 0.5f));
 
-	b2Actor->GetFixtureDef()->density = 0.83f;
-	b2Actor->GetFixtureDef()->friction = 0.4f;
-	b2Actor->GetFixtureDef()->restitution = 0.25f;
-	b2Actor->GetFixtureDef()->isSensor = false;
+	b2FixtureDef CharacterFixtureDef;
+	CharacterFixtureDef.shape = &BodyShape;
+	CharacterFixtureDef.restitution = 0.4f;
+	CharacterFixtureDef.friction = 0.3f;
+	CharacterFixtureDef.density = 20.0f;
 
-	b2Actor->GetBodyDef()->fixedRotation = true;
+	BodyComponent->SetGenerateOverlap(true);
+	BodyComponent->BindOnBeginoverlap(BeginOverlap);
+	BodyComponent->BindOnEndOverlap(EndOverlap);
+	BodyComponent->CreateFixture(&CharacterFixtureDef);
 
-	b2MassData data;
-	data.mass = 1; //kg
-	data.center = b2Vec2(0, 0);// no offset.
-	data.I = 0.0f;
+	// Visual - Foot 
+	sf::RectangleShape* FootRect = new sf::RectangleShape();
+	FootRect->setSize(UNIT_VECTOR * 0.5f);
+	FootRect->setOrigin(UNIT_VECTOR * 0.25f);
+	FootRect->setFillColor(sf::Color::Red);
+	FootRect->setOutlineColor(sf::Color::White);
+	RegisterShape(FShapeID(FootRect, 2));
 
-	b2Actor->GetBody()->SetMassData(&data);
-	b2Actor->BindOnBeginoverlap(BeginOverlap);
-	b2Actor->BindOnEndOverlap(EndOverlap);
-
-	// Foot Fixture
+	// Box2D - Foot
 	const float BoxSize = 16.0f;
 	b2PolygonShape polygonShape;
-	polygonShape.SetAsBox(BoxSize / 32.0f, BoxSize / 32.0f, b2Vec2(0, + 16.f / 32.0f), 0);
-	
+	polygonShape.SetAsBox(UNIT_SFML_TO_BOX2D(BoxSize), UNIT_SFML_TO_BOX2D(BoxSize) , b2Vec2(0, UNIT_SFML_TO_BOX2D (BoxSize)), 0);
+
 	b2FixtureDef FootFixtureDef;
 	FootFixtureDef.isSensor = true;
 	FootFixtureDef.shape = &polygonShape;
 	FootFixtureDef.density = 1;
-	
-	b2Fixture* FootSensorFixture = b2Actor->GetBody()->CreateFixture(&FootFixtureDef);
-	FootSensorFixture->SetUserData((void*)GAMETAG_PLAYER_FOOT);
 
-	// visualize this fixture.
-	FootRect.setSize(sf::Vector2f(BoxSize, BoxSize));
-	FootRect.setFillColor(sf::Color::Red);
-	FootRect.setOutlineColor(sf::Color::White);
-	FootRect.setOrigin(BoxSize / 2, BoxSize / 2);
+	b2Fixture* FootSensorFixture = BodyComponent->GetBody()->CreateFixture(&FootFixtureDef);
+	FootSensorFixture->SetUserData((void*)GAMETAG_PLAYER_FOOT);
+	Registerb2Component(Fb2ComponentID(BodyComponent, 1));
 
 	bInitialized = true;
 }
 
 void Character::Tick()
 {
+	Actor::Tick();
+
 	if (b2Actor)
 		b2Actor->Tick();
-
-	FootRect.setPosition(b2Actor->GetBody()->GetPosition().x * 32.0f, (b2Actor->GetBody()->GetPosition().y * 32.0f) + 16.f);
+	
+	//ObjectShapes[1].Shape->setPosition(UNIT_BOX2D_TO_SFML(b2Actor->GetBody()->GetPosition().x), UNIT_BOX2D_TO_SFML(b2Actor->GetBody()->GetPosition().y) + 16.f);
 
 	UpdateMovement();
 }
@@ -105,12 +108,12 @@ void Character::Jump()
 	if (bInitialized && !bJump)
 	{
 		bJump = true;
-		b2Vec2 Velocity = b2Actor->GetBody()->GetLinearVelocity();
+		b2Vec2 Velocity = b2Component.Component->GetBody()->GetLinearVelocity();
 		float TargetVelocity = 10;
 
 		float VelocityChange = TargetVelocity - Velocity.y;
-		float Impulse = b2Actor->GetBody()->GetMass() * VelocityChange;
-		b2Actor->GetBody()->ApplyLinearImpulse(b2Vec2(0, Impulse), b2Actor->GetBody()->GetWorldCenter(), true);
+		float Impulse = b2Component.Component->GetBody()->GetMass() * VelocityChange;
+		b2Component.Component->GetBody()->ApplyLinearImpulse(b2Vec2(0, Impulse), b2Component.Component->GetBody()->GetWorldCenter(), true);
 	}
 }
 
@@ -125,34 +128,31 @@ void Character::UpdateMovement()
 
 		bWantToMoveLeft = false;
 		bWantToMoveRight = false;
-		b2Vec2 Velocity = b2Actor->GetBody()->GetLinearVelocity();
+		b2Vec2 Velocity = b2Component.Component->GetBody()->GetLinearVelocity();
 		float VelocityChange = TargetVelocity - Velocity.x;
-		float Impulse = b2Actor->GetBody()->GetMass() * VelocityChange;
-		b2Actor->GetBody()->ApplyLinearImpulse(b2Vec2(Impulse, 0), b2Actor->GetBody()->GetWorldCenter(), true);
+		float Impulse = b2Component.Component->GetBody()->GetMass() * VelocityChange;
+		b2Component.Component->GetBody()->ApplyLinearImpulse(b2Vec2(Impulse, 0), b2Component.Component->GetBody()->GetWorldCenter(), true);
 	}
 }
 
-void Character::BeginOverlap(b2Actor2D* Actor, b2Actor2D* OtherActor, void* UserData, void* OtherUserData)
+void Character::BeginOverlap(PhysicComponent* Component, PhysicComponent* OverlapComponent, void* UserDataA, void* UserDataB)
 {
-	if (OtherActor && OtherActor->GetFixture())
+	if (OverlapComponent && OverlapComponent->GetOwner())
 	{
-		/// FIXME ISSUE #2 CRASH. UserData isn't properly set?
-		//if ((int)OtherActor->GetFixture()->GetUserData() == GAMETAG_STATIC_OBJECT)
+		if (OverlapComponent->GetOwner()->GetID() ==GAMETAG_STATIC_OBJECT)
 		{
-		//	if (Character* p = reinterpret_cast<Character*>(Actor))
-		//	{
-			//	p->bJump = false;
-		//	}
+			if(Character* p = static_cast<Character*>(OverlapComponent->GetOwner()))
+			{
+				p->bJump = false;
+			}
 		}
 	}
 	
-
 	LOG_CMD("Character Begin Overlap");
 }
 
 
-void Character::EndOverlap(b2Actor2D* Actor, b2Actor2D* OtherActor, void* UserData, void* OtherUserData)
+void Character::EndOverlap(PhysicComponent* Component, PhysicComponent* OverlapComponent, void* UserDataA, void* UserDataB)
 {
-	
 	LOG_CMD("Character End Overlap");
 }

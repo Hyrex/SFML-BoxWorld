@@ -9,13 +9,21 @@
 #include <assert.h>
 
 //flow control
-#define TOGGLE(A,B,flag) if(flag) A(); else B(); flag = !flag;
+#define TOGGLE(A,B,flag)			if(flag) A(); else B(); flag = !flag;
 
-#define DELTA_TIME_STEP 0.02f
-#define LOG(X) OutputDebugString(X)
-#define LOG_CMD(X) std::cout<<X<<std::endl;
-#define LOAD_CHECK(X, Path) if(!X) { std::string _s = "Cannot find file "; _s+=Path; _s+=". Load failed.\n"; LOG(_s.c_str());}
-#define CORNFLOWER_BLUE sf::Color(100, 149, 237)
+#define DELTA_TIME_STEP				0.02f
+#define LOG(X)						OutputDebugString(X)
+#define LOG_CMD(X)					std::cout<<X<<std::endl;
+#define LOAD_CHECK(X, Path)			if(!X) { std::string _s = "Cannot find file "; _s+=Path; _s+=". Load failed.\n"; LOG(_s.c_str());}
+#define CORNFLOWER_BLUE				sf::Color(100, 149, 237)
+
+#define UNIT						32.0f
+#define UNIT_ZERO_VECTOR			sf::Vector2f(0.0f, 0.0f)
+#define UNIT_VECTOR					sf::Vector2f(32.0f,32.0f)
+#define UNIT_BOX2D_TO_SFML(X)		((X)*32.0f)
+#define UNIT_SFML_TO_BOX2D(X)		((X)/32.0f)
+#define UNIT_BOX2D_TO_SFML_VEC(X,Y)	sf::Vector2f((X)*32.0f), ((Y)*32.0f)
+#define UNIT_SFML_TO_BOX2D_VEC(X,Y)	sf::Vector2f((X)/32.0f), ((Y)/32.0f)
 
 #define GAMETAG_STATIC_OBJECT	1
 #define GAMETAG_PLAYER_FOOT		2

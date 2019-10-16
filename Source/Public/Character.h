@@ -1,12 +1,13 @@
 #pragma once
 #include "b2Actor2D.h"
 #include "Interface.h"
+#include "Actor.h"
 
-class Character : public ITickable
+class Character : public Actor
 {
 public:
-
-	Character();
+	Character() {}
+	Character(std::string Name, int ID);
 	virtual ~Character();
 	virtual void Tick() override;
 
@@ -20,9 +21,8 @@ public:
 	bool IsJumping() const { return bJump; }
 	b2Actor2D* Getb2Actor() { return b2Actor.get(); }
 
-	sf::Shape* GetFootBox() { return &FootRect; }
-	static void BeginOverlap(b2Actor2D* Actor, b2Actor2D* OverlapActor, void* UserData, void* OtherUserData);
-	static void EndOverlap(b2Actor2D* Actor, b2Actor2D* OverlapActor, void* UserData, void* OtherUserData);
+	static void BeginOverlap(PhysicComponent* Component, PhysicComponent* OverlapComponent, void* UserDataA, void* UserDataB);
+	static void EndOverlap(PhysicComponent* Component, PhysicComponent* OverlapComponent, void* UserDataA, void* UserDataB);
 
 private:
 	bool bWantToMoveLeft = false;
@@ -30,6 +30,5 @@ private:
 	bool bJump = false;
 	bool bInitialized = false;
 	std::unique_ptr<b2Actor2D> b2Actor;
-	sf::RectangleShape FootRect;
 };
 

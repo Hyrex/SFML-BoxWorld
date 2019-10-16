@@ -19,7 +19,6 @@ b2Actor2D::~b2Actor2D()
 
 void b2Actor2D::Construct(const std::string Name, const EActorShapeType ShapeType, const Eb2ShapeType BodyType, sf::Vector2f Size, sf::Vector2f Location, const float Rotation, const bool bIsDynamicBody, const bool bIsSensor , const bool bGenerateOverlaps, const bool bAutoActivate)
 {
-	ObjectName = Name;
 	ObjectShapes.ShapeType = ShapeType;
 	CollisionType = BodyType;
 
@@ -61,14 +60,8 @@ void b2Actor2D::Construct(const std::string Name, const EActorShapeType ShapeTyp
 	this->bGenerateOverlaps = bGenerateOverlaps;
 	bIsDynamicObject = bIsDynamicBody;
 
-	if (bAutoActivate)
-	{
-		Activate();
-	}
-
 	// Debug!
 	const sf::Vector2f DebugArrowSize = DEBUG_ARROW_SIZE * 0.25f;
-	DebugForward = std::make_unique<sf::RectangleShape>();
 	DebugForward->setTexture(FAssetLoader::GetInstance()->GetTexture(RESOURCES_TEXTURE_DEBUG_ARROW));
 	DebugForward->setOrigin(sf::Vector2f(0, +DebugArrowSize.y/2));
 	DebugForward->setSize(DebugArrowSize);
@@ -93,7 +86,6 @@ void b2Actor2D::Tick()
 		}
 	}
 }
-
 
 void b2Actor2D::ResetToInitTransform()
 {
@@ -220,17 +212,105 @@ void b2Actor2D::SetB2ShapeProperties(const Eb2ShapeType BodyType, sf::Vector2f S
 	}
 }
 
-void b2Actor2D::Activate()
+
+//////////////////////////////////////////////////// below all wip
+
+PhysicComponent::PhysicComponent(std::string ComponentName)
 {
-	bIsActive = true; 
-	Body->SetActive(true);
-	Body->SetAwake(true);
+	// debug properties
+	const sf::Vector2f DebugArrowSize = DEBUG_ARROW_SIZE * 0.25f;
+	DebugForward->setTexture(FAssetLoader::GetInstance()->GetTexture(RESOURCES_TEXTURE_DEBUG_ARROW));
+	DebugForward->setOrigin(sf::Vector2f(0, +DebugArrowSize.y / 2));
+	DebugForward->setSize(DebugArrowSize);
+	DebugForward->setFillColor(sf::Color(255, 0, 0, 255));
 }
 
-void b2Actor2D::MakeInactive()
+void PhysicComponent::Tick()
 {
-	bIsActive = false;
-	
-	Body->SetActive(false);
-	Body->SetAwake(false);
+
+}
+
+void PhysicComponent::SetOwningParent(Actor* Parent)
+{
+	this->Parent = Parent;
+}
+
+void PhysicComponent::SetGenerateOverlap(const bool bNewGenerate)
+{
+	bGenerateOverlaps = bNewGenerate;
+}
+
+void PhysicComponent::SetPhysicEnabled(bool bEnabled)
+{
+	Body->SetActive(bEnabled);
+	Body->SetAwake(bEnabled);
+}
+
+#pragma region Callbacks
+void PhysicComponent::BeginOverlap(PhysicComponent* Component, PhysicComponent* OverlappedComponent, void* UserDataA, void* UserDataB)
+{
+	if (bGenerateOverlaps && Component && OverlappedComponent)
+	{
+		if (OnBeginOverlapCallback)
+		{
+			OnBeginOverlapCallback(Component, OverlappedComponent, UserDataA, UserDataB);
+		}
+	}
+}
+
+void PhysicComponent::EndOverlap(PhysicComponent* Component, PhysicComponent* OverlappedComponent, void* UserDataA, void* UserDataB)
+{
+	if (bGenerateOverlaps && Component && OverlappedComponent)
+	{
+		if (OnEndOverlapCallback)
+		{
+			OnEndOverlapCallback(Component, OverlappedComponent, UserDataA, UserDataB);
+		}
+	}
+}
+
+void PhysicComponent::BindOnBeginoverlap(void(*Callback)(PhysicComponent* Component, PhysicComponent* OverlappedComponent, void* UserDataA, void* UserDataB))
+{
+	OnBeginOverlapCallback = Callback;
+}
+
+void PhysicComponent::BindOnEndOverlap(void(*Callback)(PhysicComponent* Component, PhysicComponent* OverlappedComponent, void* UserDataA, void* UserDataB))
+{
+	OnEndOverlapCallback = Callback;
+}
+
+void PhysicComponent::BindOnTick(void(*TickFunction)(PhysicComponent* Component))
+{
+	TickCallback = TickFunction;
+}
+#pragma endregion Callbacks
+
+void PhysicComponent::CreateBody(b2BodyDef* BodyDef)
+{
+	Body = Application::GetInstance()->GetWorld()->CreateBody(BodyDef);
+}
+
+void PhysicComponent::CreateFixture(b2FixtureDef* FixtureDef)
+{
+	Body->CreateFixture(FixtureDef);
+}
+
+Actor* PhysicComponent::GetOwner()
+{
+	return Parent;
+}
+
+std::string PhysicComponent::GetComponentName() const
+{
+	return ComponentName;
+}
+
+sf::RectangleShape* PhysicComponent::GetDebugForward()
+{
+	return DebugForward.get();
+}
+
+b2Body* PhysicComponent::GetBody()
+{
+	return Body;
 }

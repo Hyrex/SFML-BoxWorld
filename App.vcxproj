@@ -148,6 +148,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Public\Actor.h" />
     <ClInclude Include="Source\Public\Application.h" />
     <ClInclude Include="Source\Public\AssetLoader.h" />
     <ClInclude Include="Source\Public\b2Actor2D.h" />
@@ -156,12 +157,14 @@
     <ClInclude Include="Source\Public\Defines.h" />
     <ClInclude Include="Source\Public\GameState.h" />
     <ClInclude Include="Source\Public\Interface.h" />
+    <ClInclude Include="Source\Public\StaticBlockActor.h" />
     <ClInclude Include="Source\Public\Text.h" />
     <ClInclude Include="Source\Public\TextEffect.h" />
     <ClInclude Include="Source\Public\TextManager.h" />
     <ClInclude Include="Source\Public\TickHandle.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Private\Actor.cpp" />
     <ClCompile Include="Source\Private\Application.cpp" />
     <ClCompile Include="Source\Private\AssetLoader.cpp" />
     <ClCompile Include="Source\Private\b2Actor2D.cpp" />
@@ -169,6 +172,7 @@
     <ClCompile Include="Source\Private\Character.cpp" />
     <ClCompile Include="Source\Private\GameState.cpp" />
     <ClCompile Include="Source\Private\main.cpp" />
+    <ClCompile Include="Source\Private\StaticBlockActor.cpp" />
     <ClCompile Include="Source\Private\Text.cpp" />
     <ClCompile Include="Source\Private\TextEffect.cpp" />
     <ClCompile Include="Source\Private\TextManager.cpp" />
