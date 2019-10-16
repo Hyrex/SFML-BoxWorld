@@ -5,6 +5,9 @@
 
 PhysicComponent::PhysicComponent(std::string ComponentName)
 {
+	this->ComponentName = ComponentName;
+	LOG_CMD("ComponentName Set!");
+	LOG_CMD(ComponentName);
 	// debug properties
 	const sf::Vector2f DebugArrowSize = DEBUG_ARROW_SIZE * 0.25f;
 	DebugForward->setTexture(FAssetLoader::GetInstance()->GetTexture(RESOURCES_TEXTURE_DEBUG_ARROW));
@@ -49,7 +52,7 @@ void PhysicComponent::BeginOverlap(PhysicComponent* Component, PhysicComponent* 
 {
 	if (bGenerateOverlaps && Component && OverlappedComponent)
 	{
-		if (OnBeginOverlapCallback)
+		if (OnBeginOverlapCallback != 0)
 		{
 			OnBeginOverlapCallback(Component, OverlappedComponent, UserDataA, UserDataB); /// # Issue 8 : Crash here. Function not compatible.
 		}
@@ -60,9 +63,9 @@ void PhysicComponent::EndOverlap(PhysicComponent* Component, PhysicComponent* Ov
 {
 	if (bGenerateOverlaps && Component && OverlappedComponent)
 	{
-		if (OnEndOverlapCallback)
+		if (OnEndOverlapCallback != 0)
 		{
-			OnEndOverlapCallback(Component, OverlappedComponent, UserDataA, UserDataB);
+			OnEndOverlapCallback(Component, OverlappedComponent, UserDataA, UserDataB); /// #ISSUE 9 Something wrong with the ownership, callbacks are not correct instance / structure
 		}
 	}
 }

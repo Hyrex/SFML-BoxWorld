@@ -41,6 +41,8 @@ void Actor::Tick()
 void Actor::SetObjectName(std::string Name)
 {
 	ObjectName = Name;
+	LOG_CMD("ObjectName is set!");
+	LOG_CMD(Name);
 }
 
 void Actor::SetID(int ID)

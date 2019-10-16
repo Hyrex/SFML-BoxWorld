@@ -5,7 +5,7 @@
 
 FGameState::FGameState()
 {
-	Player = std::make_unique<Character>();
+	Player = std::make_unique<Character>("Character", GAMETAG_PLAYER_BODY);
 	ResetValues();
 }
 

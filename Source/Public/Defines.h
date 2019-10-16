@@ -27,6 +27,7 @@
 
 #define GAMETAG_STATIC_OBJECT	1
 #define GAMETAG_PLAYER_FOOT		2
+#define GAMETAG_PLAYER_BODY		3
 
 #define TEXT_SIZE_S 9
 #define TEXT_SIZE_M 16

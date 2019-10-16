@@ -4,7 +4,8 @@
 
 Character::Character(std::string Name, int ID)
 {
-	Actor(Name, ID);
+	SetObjectName(Name);
+	SetID(ID);
 }
 
 Character::~Character()
@@ -26,7 +27,7 @@ void Character::Initialize()
 	RegisterShape(FShapeID(CharacterBody, 1)); 
 	
 	// Box2D - MainBody
-	PhysicComponent* BodyComponent = new PhysicComponent("Box-BodyComponent");
+	PhysicComponent* BodyComponent = new PhysicComponent(GetObjectName() + "-PhysicComponent");
 	BodyComponent->SetOwningParent(this);
 
 	sf::View ViewPort;

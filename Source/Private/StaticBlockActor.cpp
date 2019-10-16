@@ -3,7 +3,8 @@
 
 StaticBlockActor::StaticBlockActor(std::string Name, int ID)
 {
-	Actor::Actor(Name, ID);
+	SetObjectName(Name);
+	SetID(ID);
 }
 
 StaticBlockActor::~StaticBlockActor()
@@ -24,7 +25,8 @@ void StaticBlockActor::Construct(sf::Vector2f Size, sf::Vector2f Location, const
 	Rect->setOutlineColor(sf::Color::Black);
 
 	//variable make with t prefix need to make parser later. Make it less copy paste
-	PhysicComponent* b2Component = new PhysicComponent("Body");
+	PhysicComponent* b2Component = new PhysicComponent(GetObjectName()+"-PhysicComponent");
+	b2Component->SetOwningParent(this);
 
 	b2BodyDef tBodyDef;
 	tBodyDef.type = b2_staticBody;
