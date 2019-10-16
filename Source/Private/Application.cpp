@@ -4,8 +4,8 @@
 #include "Actor.h"
 #include "Character.h"
 #include "StaticBlockActor.h"
-#include "b2Actor2D.h"
-#include "b2Actor2DContactListener.h"
+#include "PhysicComponent.h"
+#include "PhysicComponentContactListener.h"
 #include "TextManager.h"
 
 Application*  Application::Instance = nullptr;
@@ -187,15 +187,15 @@ void Application::Tick(const float DeltaTime)
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 		{
-			if (!GameState.IsGameStarted())
+			if (GameState.IsGameStarted())
+			{
+				GameState.GetPlayer()->Jump();
+			}
+			else
 			{
 				GameState.StartGame();
 				StartGameTranslateOut->Begin();
 				StartGameAlphaFadeOut->Begin();
-			}
-			else
-			{
-				GameState.GetPlayer()->Jump();
 			}
 		}
 
@@ -206,15 +206,17 @@ void Application::Tick(const float DeltaTime)
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 		{
-			GameState.GetPlayer()->MoveLeft();
+			if (GameState.IsGameStarted())
+				GameState.GetPlayer()->MoveLeft();
 		}
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 		{
-			GameState.GetPlayer()->MoveRight();
+			if(GameState.IsGameStarted())
+				GameState.GetPlayer()->MoveRight();
 		}
 
-		if (sf::Joystick::isConnected(0))
+		if (sf::Joystick::isConnected(0) && GameState.IsGameStarted())
 		{
 			const float fDPadXValue = sf::Joystick::getAxisPosition(0, PS4_DPadX);
 			if (fDPadXValue > 10.00f) GameState.GetPlayer()->MoveRight();
@@ -226,15 +228,15 @@ void Application::Tick(const float DeltaTime)
 
 			if (sf::Joystick::isButtonPressed(0, PS4_Cross))
 			{
-				if (!GameState.IsGameStarted())
+				if (GameState.IsGameStarted())
+				{
+					GameState.GetPlayer()->Jump();
+				}
+				else
 				{
 					GameState.StartGame();
 					StartGameTranslateOut->Begin();
 					StartGameAlphaFadeOut->Begin();
-				}
-				else
-				{
-					GameState.GetPlayer()->Jump();
 				}
 			}
 

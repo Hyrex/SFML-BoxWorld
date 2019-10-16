@@ -2,7 +2,7 @@
 #include "SFML/Graphics.hpp"
 #include <vector>
 #include "Interface.h"
-#include "b2Actor2D.h"
+#include "PhysicComponent.h"
 
 struct FShapeID
 {

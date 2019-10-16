@@ -15,11 +15,23 @@
     <Filter Include="Source\Public">
       <UniqueIdentifier>{1cbacc78-86b8-4a53-a30f-43e598bda5e7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Private\GameObject">
+    <Filter Include="Source\Private\Actor">
+      <UniqueIdentifier>{daf26015-64b5-42c8-a57d-7b56e9e04e4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Public\Actor">
+      <UniqueIdentifier>{603bd588-bfe8-4bda-a907-e41581d9f781}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Private\Component">
       <UniqueIdentifier>{c370a058-907f-4e53-9175-f46d48c90dff}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Public\GameObject">
+    <Filter Include="Source\Public\Component">
       <UniqueIdentifier>{1e0baa71-f43f-4e28-991a-0f0239d2c80e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Private\Text">
+      <UniqueIdentifier>{73465cf5-21b2-41fa-87cd-08ce89b224a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Public\Text">
+      <UniqueIdentifier>{fe032491-2a80-496f-a0a3-c62a96d8e0be}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -35,35 +47,35 @@
     <ClInclude Include="Source\Public\TickHandle.h">
       <Filter>Source\Public</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Public\b2Actor2D.h">
-      <Filter>Source\Public\GameObject</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Public\Interface.h">
       <Filter>Source\Public</Filter>
     </ClInclude>
     <ClInclude Include="Source\Public\GameState.h">
       <Filter>Source\Public</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Public\Character.h">
-      <Filter>Source\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Public\TextManager.h">
-      <Filter>Source\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Public\Text.h">
-      <Filter>Source\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Public\TextEffect.h">
-      <Filter>Source\Public</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Public\b2Actor2DContactListener.h">
-      <Filter>Source\Public\GameObject</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Public\Actor.h">
-      <Filter>Source\Public</Filter>
+      <Filter>Source\Public\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Public\Character.h">
+      <Filter>Source\Public\Actor</Filter>
     </ClInclude>
     <ClInclude Include="Source\Public\StaticBlockActor.h">
-      <Filter>Source\Public</Filter>
+      <Filter>Source\Public\Actor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Public\PhysicComponent.h">
+      <Filter>Source\Public\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Public\PhysicComponentContactListener.h">
+      <Filter>Source\Public\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Public\Text.h">
+      <Filter>Source\Public\Text</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Public\TextEffect.h">
+      <Filter>Source\Public\Text</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Public\TextManager.h">
+      <Filter>Source\Public\Text</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -79,32 +91,32 @@
     <ClCompile Include="Source\Private\TickHandle.cpp">
       <Filter>Source\Private</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Private\b2Actor2D.cpp">
-      <Filter>Source\Private\GameObject</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Private\b2Actor2DContactListener.cpp">
-      <Filter>Source\Private\GameObject</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Private\GameState.cpp">
       <Filter>Source\Private</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Private\Character.cpp">
-      <Filter>Source\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Private\TextManager.cpp">
-      <Filter>Source\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Private\Text.cpp">
-      <Filter>Source\Private</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Private\TextEffect.cpp">
-      <Filter>Source\Private</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Private\Actor.cpp">
-      <Filter>Source\Private</Filter>
+      <Filter>Source\Private\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Private\Character.cpp">
+      <Filter>Source\Private\Actor</Filter>
     </ClCompile>
     <ClCompile Include="Source\Private\StaticBlockActor.cpp">
-      <Filter>Source\Private</Filter>
+      <Filter>Source\Private\Actor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Private\PhysicComponent.cpp">
+      <Filter>Source\Private\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Private\PhysicComponentContactListener.cpp">
+      <Filter>Source\Private\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Private\TextEffect.cpp">
+      <Filter>Source\Private\Text</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Private\Text.cpp">
+      <Filter>Source\Private\Text</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Private\TextManager.cpp">
+      <Filter>Source\Private\Text</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

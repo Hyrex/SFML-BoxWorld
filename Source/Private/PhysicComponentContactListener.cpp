@@ -1,5 +1,5 @@
-#include "b2Actor2DContactListener.h"
-#include "b2Actor2D.h"
+#include "PhysicComponentContactListener.h"
+#include "PhysicComponent.h"
 #include "Defines.h"
 
 PhysicComponentContactListener::PhysicComponentContactListener()

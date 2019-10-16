@@ -1,5 +1,5 @@
 #include "Actor.h"
-#include "b2Actor2D.h"
+#include "PhysicComponent.h"
 #include "Defines.h"
 
 Actor::Actor(std::string Name, int ID)

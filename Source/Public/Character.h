@@ -1,5 +1,5 @@
 #pragma once
-#include "b2Actor2D.h"
+#include "PhysicComponent.h"
 #include "Interface.h"
 #include "Actor.h"
 

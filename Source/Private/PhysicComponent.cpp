@@ -1,4 +1,4 @@
-#include "b2Actor2D.h"
+#include "PhysicComponent.h"
 #include "Application.h"
 #include "AssetLoader.h"
 
@@ -51,7 +51,7 @@ void PhysicComponent::BeginOverlap(PhysicComponent* Component, PhysicComponent* 
 	{
 		if (OnBeginOverlapCallback)
 		{
-			OnBeginOverlapCallback(Component, OverlappedComponent, UserDataA, UserDataB);
+			OnBeginOverlapCallback(Component, OverlappedComponent, UserDataA, UserDataB); /// # Issue 8 : Crash here. Function not compatible.
 		}
 	}
 }
