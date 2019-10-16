@@ -41,9 +41,9 @@ public:
 
 	void SetObjectName(std::string Name);
 	void SetID(int ID);
-	void SetWorldLocation(sf::Vector2f Location)	{ WorldLocation = Location; }
-	void SetWorldRotation(float Rotation)			{ WorldRotation = Rotation; }
-	void SetWorldTransform(sf::Vector2f Location, float Rotation) { SetWorldLocation(Location); SetWorldRotation(Rotation); }
+	void SetWorldLocation(sf::Vector2f Location);
+	void SetWorldRotation(float Rotation);
+	void SetWorldTransform(sf::Vector2f Location, float Rotation);
 
 	void RegisterShape(FShapeID ShapeID);
 	void Registerb2Component(Fb2ComponentID ComponentID);

@@ -26,10 +26,11 @@ void Actor::Tick()
 			//for each of the b2Component, update if component match visual id
 			if (b2Component.b2ID == si.sID)
 			{
-				si.Shape->setRotation(b2Component.Component->GetBody()->GetAngle() * 180 / b2_pi);
-				const float LocationX = UNIT_BOX2D_TO_SFML(b2Component.Component->GetBody()->GetPosition().x);
-				const float LocationY = UNIT_BOX2D_TO_SFML(b2Component.Component->GetBody()->GetPosition().y);
-				si.Shape->setPosition(LocationX, LocationY);
+				WorldRotation = b2Component.Component->GetBody()->GetAngle() * 180 / b2_pi;
+				si.Shape->setRotation(WorldRotation);
+				WorldLocation.x = UNIT_BOX2D_TO_SFML(b2Component.Component->GetBody()->GetPosition().x);
+				WorldLocation.y = UNIT_BOX2D_TO_SFML(b2Component.Component->GetBody()->GetPosition().y);
+				si.Shape->setPosition(WorldLocation);
 			}
 		}
 	}
@@ -45,6 +46,22 @@ void Actor::SetObjectName(std::string Name)
 void Actor::SetID(int ID)
 {
 	this->ID = ID;
+}
+
+void Actor::SetWorldLocation(sf::Vector2f Location) 
+{ 
+	WorldLocation = Location; 
+}
+
+void Actor::SetWorldRotation(float Rotation) 
+{ 
+	WorldRotation = Rotation;
+}
+
+void Actor::SetWorldTransform(sf::Vector2f Location, float Rotation) 
+{ 
+	SetWorldLocation(Location); 
+	SetWorldRotation(Rotation); 
 }
 
 void Actor::RegisterShape(FShapeID ShapeID)

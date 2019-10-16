@@ -13,6 +13,9 @@ StaticBlockActor::~StaticBlockActor()
 
 void StaticBlockActor::Construct(sf::Vector2f Size, sf::Vector2f Location, const float Rotation)
 {
+	WorldLocation = Location;
+	WorldRotation = Rotation;
+
 	sf::RectangleShape* Rect = new sf::RectangleShape();
 	Rect->setSize(Size);
 	Rect->setOrigin(Size * 0.5f);
@@ -24,7 +27,9 @@ void StaticBlockActor::Construct(sf::Vector2f Size, sf::Vector2f Location, const
 	PhysicComponent* b2Component = new PhysicComponent("Body");
 
 	b2BodyDef tBodyDef;
-	tBodyDef.position.Set(UNIT_SFML_TO_BOX2D(Location.x * 0.5f), UNIT_SFML_TO_BOX2D(Location.y * 0.5f));
+	tBodyDef.type = b2_staticBody;
+	tBodyDef.position.Set(UNIT_SFML_TO_BOX2D(Location.x), UNIT_SFML_TO_BOX2D(Location.y));
+	tBodyDef.userData = (void*)this;
 	b2Component->CreateBody(&tBodyDef);
 
 	b2PolygonShape tFixtureShape;
@@ -35,8 +40,10 @@ void StaticBlockActor::Construct(sf::Vector2f Size, sf::Vector2f Location, const
 	tFixtureDef.restitution = 0.1f;
 	tFixtureDef.friction = 0.3f;
 	tFixtureDef.density = 60.0f;
+	tFixtureDef.isSensor = false;
 
 	b2Component->CreateFixture(&tFixtureDef);
+	b2Component->SetGenerateOverlap(true);
 
 	RegisterShape(FShapeID(Rect, 1));
 	Registerb2Component(Fb2ComponentID(b2Component, 1));

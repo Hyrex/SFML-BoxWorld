@@ -13,11 +13,11 @@ Application*  Application::Instance = nullptr;
 
 Application::Application()
 {
-	b2ActorContactListner = std::make_unique<b2Actor2DContactListener>();
+	ContactListener = std::make_unique<PhysicComponentContactListener>();
 
 	Gravity = b2Vec2(0.f, 9.81f);
 	World = std::make_shared<b2World>(Gravity);
-	World->SetContactListener(b2ActorContactListner.get());
+	World->SetContactListener(ContactListener.get());
 }
 
 Application::~Application()
@@ -88,9 +88,6 @@ void Application::Initialize()
 	std::unique_ptr<StaticBlockActor> BotBorder = std::make_unique<StaticBlockActor>("BotBorder", GAMETAG_STATIC_OBJECT);
 	BotBorder->Construct(XBorder, DBorderLocation);
 	Actors.push_back(std::move(BotBorder));
-
-	/// ISSUE 6 : All position are incorrect now!
-	/// ISSUE 7 : Character not falling? Fix it.
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -182,9 +179,6 @@ void Application::Tick(const float DeltaTime)
 	{
 		GameState.Tick();
 
-		for (auto& i : b2Actors)
-			if (i) i->Tick();
-
 		for (auto& i : Actors)
 			if (i) i->Tick();
 
@@ -251,22 +245,6 @@ void Application::Tick(const float DeltaTime)
 				AppWindow.close();
 		}
 
-		if (sf::Mouse::isButtonPressed(sf::Mouse::Right))
-		{
-			if (!bRightMousePressed)
-			{
-				if (!GameState.IsGameOver() && GameState.IsGameStarted())
-				{
-
-				}
-				bRightMousePressed = true;
-			}
-		}
-		else
-		{
-			bRightMousePressed = false;
-		}
-
 		// Middle Button ： Reset
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Middle))
 		{
@@ -287,20 +265,30 @@ void Application::Tick(const float DeltaTime)
 		// Update Angle Indicator
 		AngleIndicators[0].position = sf::Vector2f(0.0f, 0.0f);
 		AngleIndicators[1].position = sf::Vector2f(sf::Mouse::getPosition(AppWindow));
+		
+	
 	}
 
 	// Rendering
 	AppWindow.clear(sf::Color::Black);
 
-	for (auto& Itr : b2Actors)
-		AppWindow.draw(*Itr->GetShape());
+
+	for (auto& Itr : Actors)
+	{
+		for (int i = 0; i < Itr->GetShapeCount(); ++i)
+		{
+			if(sf::Shape* s = Itr->GetShapeAtIndex(i))
+				AppWindow.draw(*s);
+		}
+	}
 
 	if (GameState.GetPlayer()->IsInitialized())
 	{
 		AppWindow.draw(*GameState.GetPlayer()->Getb2Component().Component->GetDebugForward());
-		for (int i = 0 ; i < GameState.GetPlayer()->GetShapeCount(); ++i)
+		for (int i = 0; i < GameState.GetPlayer()->GetShapeCount(); ++i)
 		{
-			AppWindow.draw(*GameState.GetPlayer()->GetShapeAtIndex(i));
+			if(sf::Shape* s = GameState.GetPlayer()->GetShapeAtIndex(i))
+				AppWindow.draw(*s);
 		}
 	}
 
@@ -309,11 +297,6 @@ void Application::Tick(const float DeltaTime)
 		if (Itr.TargetText->IsVisible())
 			AppWindow.draw(Itr.TargetText->Text);
 	}
-
-	//wip
-	for (auto& Itr : Actors)
-		AppWindow.draw(*Itr->GetShapeAtIndex(0)); /// ISSUE 3: This might return nullptr, and *nullptr is crash
-
 
 	AppWindow.draw(AngleIndicators, 2, sf::Lines);
 	AppWindow.display();

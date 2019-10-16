@@ -19,7 +19,6 @@ public:
 
 	bool IsInitialized() const { return bInitialized; }
 	bool IsJumping() const { return bJump; }
-	b2Actor2D* Getb2Actor() { return b2Actor.get(); }
 
 	static void BeginOverlap(PhysicComponent* Component, PhysicComponent* OverlapComponent, void* UserDataA, void* UserDataB);
 	static void EndOverlap(PhysicComponent* Component, PhysicComponent* OverlapComponent, void* UserDataA, void* UserDataB);
@@ -29,6 +28,5 @@ private:
 	bool bWantToMoveRight = false;
 	bool bJump = false;
 	bool bInitialized = false;
-	std::unique_ptr<b2Actor2D> b2Actor;
 };
 

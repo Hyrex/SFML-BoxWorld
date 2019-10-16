@@ -34,7 +34,9 @@ void Character::Initialize()
 
 	b2BodyDef CharacterBodyDef;
 	CharacterBodyDef.fixedRotation = true;
+	CharacterBodyDef.type = b2_dynamicBody;
 	CharacterBodyDef.position.Set(UNIT_SFML_TO_BOX2D(ViewPort.getSize().x * 0.5f), UNIT_SFML_TO_BOX2D(ViewPort.getSize().y * 0.5f));
+	CharacterBodyDef.userData = (void*)this;
 	BodyComponent->CreateBody(&CharacterBodyDef);
 
 	b2PolygonShape BodyShape;
@@ -80,10 +82,8 @@ void Character::Tick()
 {
 	Actor::Tick();
 
-	if (b2Actor)
-		b2Actor->Tick();
-	
-	//ObjectShapes[1].Shape->setPosition(UNIT_BOX2D_TO_SFML(b2Actor->GetBody()->GetPosition().x), UNIT_BOX2D_TO_SFML(b2Actor->GetBody()->GetPosition().y) + 16.f);
+	// Update Foot Sensor
+	ObjectShapes[1].Shape->setPosition(UNIT_BOX2D_TO_SFML(b2Component.Component->GetBody()->GetPosition().x), UNIT_BOX2D_TO_SFML(b2Component.Component->GetBody()->GetPosition().y) + 16.f);
 
 	UpdateMovement();
 }
@@ -139,13 +139,14 @@ void Character::BeginOverlap(PhysicComponent* Component, PhysicComponent* Overla
 {
 	if (OverlapComponent && OverlapComponent->GetOwner())
 	{
-		if (OverlapComponent->GetOwner()->GetID() ==GAMETAG_STATIC_OBJECT)
+		if (OverlapComponent->GetOwner()->GetID() == GAMETAG_STATIC_OBJECT)
 		{
-			if(Character* p = static_cast<Character*>(OverlapComponent->GetOwner()))
+			if (Character* p = static_cast<Character*>(Component->GetOwner()))
 			{
 				p->bJump = false;
+				LOG_CMD("Character Landed");
 			}
-		}
+		} 
 	}
 	
 	LOG_CMD("Character Begin Overlap");

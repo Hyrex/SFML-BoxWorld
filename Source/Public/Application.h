@@ -11,8 +11,7 @@
 #include "Defines.h"
 
 class Actor;
-class b2Actor2D;
-class b2Actor2DContactListener;
+class PhysicComponentContactListener;
 
 struct FRenderWindowData
 {
@@ -60,21 +59,12 @@ private:
 	sf::Music*			BGM;
 	
 	//Box2D
-	b2Vec2										Gravity; 
-	std::shared_ptr<b2World>					World;
-	std::unique_ptr<b2Actor2DContactListener>	b2ActorContactListner;
-
-	std::vector<std::unique_ptr<b2Actor2D>>		b2Actors;
-
-	// wip
-	std::vector<std::unique_ptr<Actor>>			Actors;
+	b2Vec2												Gravity; 
+	std::shared_ptr<b2World>							World;
+	std::unique_ptr<PhysicComponentContactListener>		ContactListener;
+	std::vector<std::unique_ptr<Actor>>					Actors;
 
 	sf::Vertex AngleIndicators[2];
-
-	bool bLeftPressed = false;
-	bool bRightPressed = false;
-	bool bSpacePressed = false;
-	bool bRightMousePressed = false;
 	bool bMiddleMousePressed = false;
 	bool bIsPaused = false;
 
