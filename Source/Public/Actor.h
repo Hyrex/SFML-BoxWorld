@@ -55,6 +55,7 @@ public:
 	Fb2ComponentID Getb2Component() { return b2Component; }
 	std::string	GetObjectName()	const;
 	sf::Shape*	GetShapeAtIndex(const int Index);
+	sf::Vector2f GetWorldLocation() const;
 
 protected:
 	std::string							ObjectName;

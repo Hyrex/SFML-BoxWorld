@@ -104,3 +104,8 @@ sf::Shape* Actor::GetShapeAtIndex(const int Index)
 	std::cout << "GetShapeAtIndex() out of range!" << std::endl;
 	return nullptr;
 }
+
+sf::Vector2f Actor::GetWorldLocation() const
+{
+	return WorldLocation;
+}

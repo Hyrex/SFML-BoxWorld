@@ -1,11 +1,14 @@
 #include "Character.h"
 #include "Application.h"
 #include "Defines.h"
+#include "TextManager.h"
 
 Character::Character(std::string Name, int ID)
 {
 	SetObjectName(Name);
 	SetID(ID);
+
+	FTextManager::Register(FTextEffectBundle(DebugJumpFlagText.get()));
 }
 
 Character::~Character()
@@ -45,7 +48,7 @@ void Character::Initialize()
 
 	b2FixtureDef CharacterFixtureDef;
 	CharacterFixtureDef.shape = &BodyShape;
-	CharacterFixtureDef.restitution = 0.4f;
+	CharacterFixtureDef.restitution = 0.1f;
 	CharacterFixtureDef.friction = 0.3f;
 	CharacterFixtureDef.density = 20.0f;
 	CharacterFixtureDef.userData = ((void*)GAMETAG_PLAYER_BODY);
@@ -54,6 +57,12 @@ void Character::Initialize()
 	Component->BindOnBeginoverlap(BeginOverlap);
 	Component->BindOnEndOverlap(EndOverlap);
 	Component->GetBody()->CreateFixture(&CharacterFixtureDef);
+
+	b2MassData CharacterMass;
+	CharacterMass.mass = 1.0f;
+	CharacterMass.center = b2Vec2(0.0f, 0.0f);
+
+	Component->GetBody()->SetMassData(&CharacterMass);
 
 	// Visual - Foot 
 	sf::RectangleShape* FootRect = new sf::RectangleShape();
@@ -91,6 +100,11 @@ void Character::Tick()
 	if(JumpTimedOutTimer >= -1.0f)
 		JumpTimedOutTimer -= DELTA_TIME_STEP;
 
+#if DEBUG_GAME
+	DebugJumpFlagText->SetText(bJump ? "Jump=Yes" : "Jump=No");
+	DebugJumpFlagText->Text.setPosition(GetWorldLocation() + sf::Vector2f(16.0f, -32.0f));
+#endif
+
 	UpdateMovement();
 }
 void Character::MoveLeft()
@@ -114,11 +128,11 @@ void Character::Jump()
 	if (bInitialized && !bJump && JumpTimedOutTimer <= 0.0f)
 	{
 		bJump = true;
-		JumpTimedOutTimer = JUMP_BLOCK_INTERVAL;
 		LOG_CMD("Jump pressed");
+		
 		b2Vec2 Velocity = b2Component.Component->GetBody()->GetLinearVelocity();
-		float TargetVelocity = 5;
-
+		float TargetVelocity = 8.0f;
+		
 		float VelocityChange = TargetVelocity - Velocity.y;
 		float Impulse = b2Component.Component->GetBody()->GetMass() * VelocityChange;
 		b2Component.Component->GetBody()->ApplyLinearImpulse(b2Vec2(0, -Impulse), b2Component.Component->GetBody()->GetWorldCenter(), true);
@@ -129,17 +143,26 @@ void Character::UpdateMovement()
 {
 	if (bInitialized)
 	{
-		float TargetVelocity = 0.0f;
+		b2Vec2 Velocity = b2Component.Component->GetBody()->GetLinearVelocity();
+		float TargetVelocityX = Velocity.x * 0.75f; // decrease per update
+		Velocity.y *= (Velocity.y >= 0) ? 0.25f : 4.0f; // decrease per update
+		//float TargetVelocityY = Velocity.y * 0.85f; // decrease per update
 
-		if (bWantToMoveLeft && !bWantToMoveRight) TargetVelocity = -10.0f;
-		if (!bWantToMoveLeft && bWantToMoveRight) TargetVelocity = 10.0f;
+		if (bWantToMoveLeft && !bWantToMoveRight) TargetVelocityX = b2Max(Velocity.x - 4.0f, -16.0f);
+		if (!bWantToMoveLeft && bWantToMoveRight) TargetVelocityX = b2Min(Velocity.x + 4.0f, +16.0f);
+		//if (bJump)
+		//{
+		//	TargetVelocityY = 16.0f;
+		//}
 
 		bWantToMoveLeft = false;
 		bWantToMoveRight = false;
-		b2Vec2 Velocity = b2Component.Component->GetBody()->GetLinearVelocity();
-		float VelocityChange = TargetVelocity - Velocity.x;
-		float Impulse = b2Component.Component->GetBody()->GetMass() * VelocityChange;
-		b2Component.Component->GetBody()->ApplyLinearImpulse(b2Vec2(Impulse, 0), b2Component.Component->GetBody()->GetWorldCenter(), true);
+		
+		//float DeltaVelocityY = TargetVelocityY - Velocity.y;
+		float DeltaVelocityX = TargetVelocityX - Velocity.x;
+		float ImpulseX = b2Component.Component->GetBody()->GetMass() * DeltaVelocityX;
+		//float ImpulseY = b2Component.Component->GetBody()->GetMass() * DeltaVelocityY;
+		b2Component.Component->GetBody()->ApplyLinearImpulse(b2Vec2(ImpulseX, 0), b2Component.Component->GetBody()->GetWorldCenter(), true);
 	}
 }
 
@@ -152,7 +175,7 @@ void Character::BeginOverlap(PhysicComponent* Component, PhysicComponent* Overla
 			if (Character* p = static_cast<Character*>(Component->GetOwner()))
 			{
 				p->bJump = false;
-				p->JumpTimedOutTimer = 0.0f;
+				p->JumpTimedOutTimer = JUMP_BLOCK_INTERVAL;
 				LOG_CMD("Jump unlocked");
 			}
 		} 

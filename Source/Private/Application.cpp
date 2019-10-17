@@ -320,7 +320,7 @@ void Application::SetupText()
 	const float ViewportX = (float)RenderWindowData.Width;
 	const float ViewportY = (float)RenderWindowData.Height;
 
-	PositionDataText->Text.setPosition(sf::Vector2f(32.0f, 32.0f));
+	PositionDataText->Text.setPosition(sf::Vector2f(64.0f, 64.0f));
 
 	// Static String Texts
 	TimerText->Text.setPosition(sf::Vector2f(32.0f, ViewportY - 64.0f));

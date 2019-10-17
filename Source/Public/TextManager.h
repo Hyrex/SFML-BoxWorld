@@ -11,7 +11,8 @@ struct FTextEffectBundle
 	std::vector<FTextEffect*> Effects;
 
 	// Generate unique IDs.
-	FTextEffectBundle() { ID++; };
+	explicit FTextEffectBundle(FText* Text) { ID++; TargetText = Text; }
+	explicit FTextEffectBundle() { ID++; };
 };
 
 class FTextManager : public ITickable, public IDrawable
