@@ -31,8 +31,9 @@ void StaticBlockActor::Construct(sf::Vector2f Size, sf::Vector2f Location, const
 	b2BodyDef tBodyDef;
 	tBodyDef.type = b2_staticBody;
 	tBodyDef.position.Set(UNIT_SFML_TO_BOX2D(Location.x), UNIT_SFML_TO_BOX2D(Location.y));
-	tBodyDef.userData = (void*)this;
+	//tBodyDef.userData = (void*)this;
 	b2Component->CreateBody(&tBodyDef);
+	b2Component->GetBody()->SetUserData((void*)this);
 
 	b2PolygonShape tFixtureShape;
 	tFixtureShape.SetAsBox(UNIT_SFML_TO_BOX2D(Size.x * 0.5f), UNIT_SFML_TO_BOX2D(Size.y * 0.5f));

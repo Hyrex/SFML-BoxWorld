@@ -37,8 +37,9 @@ void Character::Initialize()
 	CharacterBodyDef.fixedRotation = true;
 	CharacterBodyDef.type = b2_dynamicBody;
 	CharacterBodyDef.position.Set(UNIT_SFML_TO_BOX2D(ViewPort.getSize().x * 0.5f), UNIT_SFML_TO_BOX2D(ViewPort.getSize().y * 0.5f));
-	CharacterBodyDef.userData = (void*)this;
+	//CharacterBodyDef.userData = (void*)this;
 	BodyComponent->CreateBody(&CharacterBodyDef);
+	BodyComponent->GetBody()->SetUserData((void*)this);
 
 	b2PolygonShape BodyShape;
 	BodyShape.SetAsBox(UNIT_SFML_TO_BOX2D(UNIT_VECTOR.x * 0.5f), UNIT_SFML_TO_BOX2D(UNIT_VECTOR.y * 0.5f));
@@ -110,11 +111,11 @@ void Character::Jump()
 	{
 		bJump = true;
 		b2Vec2 Velocity = b2Component.Component->GetBody()->GetLinearVelocity();
-		float TargetVelocity = 10;
+		float TargetVelocity = 5;
 
 		float VelocityChange = TargetVelocity - Velocity.y;
 		float Impulse = b2Component.Component->GetBody()->GetMass() * VelocityChange;
-		b2Component.Component->GetBody()->ApplyLinearImpulse(b2Vec2(0, Impulse), b2Component.Component->GetBody()->GetWorldCenter(), true);
+		b2Component.Component->GetBody()->ApplyLinearImpulse(b2Vec2(0, -Impulse), b2Component.Component->GetBody()->GetWorldCenter(), true);
 	}
 }
 
@@ -149,12 +150,9 @@ void Character::BeginOverlap(PhysicComponent* Component, PhysicComponent* Overla
 			}
 		} 
 	}
-	
-	LOG_CMD("Character Begin Overlap");
 }
-
 
 void Character::EndOverlap(PhysicComponent* Component, PhysicComponent* OverlapComponent, void* UserDataA, void* UserDataB)
 {
-	LOG_CMD("Character End Overlap");
+	
 }

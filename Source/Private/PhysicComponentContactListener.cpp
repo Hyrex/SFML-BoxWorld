@@ -1,6 +1,7 @@
 #include "PhysicComponentContactListener.h"
 #include "PhysicComponent.h"
 #include "Defines.h"
+#include "Actor.h"
 
 PhysicComponentContactListener::PhysicComponentContactListener()
 {
@@ -18,12 +19,28 @@ void PhysicComponentContactListener::BeginContact(b2Contact* Contact)
 	void* BodyUserDataB = Contact->GetFixtureB()->GetBody()->GetUserData();
 
 	if (BodyUserDataA)
-		static_cast<PhysicComponent*>(BodyUserDataA)->BeginOverlap(static_cast<PhysicComponent*>(BodyUserDataA), static_cast<PhysicComponent*>(BodyUserDataB), BodyUserDataA, BodyUserDataB);
+	{
+		if (Actor* const pActorA = static_cast<Actor*>(BodyUserDataA))
+		{
+			if (Actor* const pActorB = static_cast<Actor*>(BodyUserDataB))
+			{
+				pActorA->Getb2Component().Component->BeginOverlap(pActorA->Getb2Component().Component, pActorB->Getb2Component().Component, BodyUserDataA, BodyUserDataB);
+			}
+
+		}
+	}
 
 	if (BodyUserDataB)
-		static_cast<PhysicComponent*>(BodyUserDataB)->BeginOverlap(static_cast<PhysicComponent*>(BodyUserDataB), static_cast<PhysicComponent*>(BodyUserDataA), BodyUserDataB, BodyUserDataA);
+	{
+		if (Actor* const pActorA = static_cast<Actor*>(BodyUserDataA))
+		{
+			if (Actor* const pActorB = static_cast<Actor*>(BodyUserDataB))
+			{
+				pActorB->Getb2Component().Component->BeginOverlap(pActorB->Getb2Component().Component, pActorA->Getb2Component().Component, BodyUserDataB, BodyUserDataA);
+			}
 
-	LOG_CMD("BeginContact Fired");
+		}
+	}
 }
 
 void PhysicComponentContactListener::EndContact(b2Contact* Contact)
@@ -32,10 +49,26 @@ void PhysicComponentContactListener::EndContact(b2Contact* Contact)
 	void* BodyUserDataB = Contact->GetFixtureB()->GetBody()->GetUserData();
 
 	if (BodyUserDataA)
-		static_cast<PhysicComponent*>(BodyUserDataA)->EndOverlap(static_cast<PhysicComponent*>(BodyUserDataA), static_cast<PhysicComponent*>(BodyUserDataB), BodyUserDataA, BodyUserDataB);
+	{
+		if (Actor* const pActorA = static_cast<Actor*>(BodyUserDataA))
+		{
+			if (Actor* const pActorB = static_cast<Actor*>(BodyUserDataB))
+			{
+				pActorA->Getb2Component().Component->EndOverlap(pActorA->Getb2Component().Component, pActorB->Getb2Component().Component, BodyUserDataA, BodyUserDataB);
+			}
+
+		}
+	}
 
 	if (BodyUserDataB)
-		static_cast<PhysicComponent*>(BodyUserDataB)->EndOverlap(static_cast<PhysicComponent*>(BodyUserDataB), static_cast<PhysicComponent*>(BodyUserDataA), BodyUserDataB, BodyUserDataA);
-	
-	LOG_CMD("EndContact Fired");
+	{
+		if (Actor* const pActorA = static_cast<Actor*>(BodyUserDataA))
+		{
+			if (Actor* const pActorB = static_cast<Actor*>(BodyUserDataB))
+			{
+				pActorB->Getb2Component().Component->EndOverlap(pActorB->Getb2Component().Component, pActorA->Getb2Component().Component, BodyUserDataB, BodyUserDataA);
+			}
+
+		}
+	}
 }
