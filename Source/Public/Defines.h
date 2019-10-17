@@ -26,8 +26,10 @@
 #define UNIT_SFML_TO_BOX2D_VEC(X,Y)	sf::Vector2f((X)/32.0f), ((Y)/32.0f)
 
 #define GAMETAG_STATIC_OBJECT	1
-#define GAMETAG_PLAYER_FOOT		2
-#define GAMETAG_PLAYER_BODY		3
+
+#define GAMETAG_PLAYER_BODY		11
+#define GAMETAG_PLAYER_FOOT		12
+
 
 #define TEXT_SIZE_S 9
 #define TEXT_SIZE_M 16

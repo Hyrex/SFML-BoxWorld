@@ -31,14 +31,15 @@ struct Fb2ComponentID
 	}
 };
 
-class Actor : public ITickable
+class Actor : public ITickable, public IDrawable
 {
 public:
 	Actor() {};
 	Actor(std::string Name, int ID);
 	virtual ~Actor();
 
-	virtual void Tick() override;;
+	virtual void Tick() override;
+	virtual void Draw() override;
 
 	void SetObjectName(std::string Name);
 	void SetID(int ID);

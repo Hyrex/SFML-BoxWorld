@@ -1,6 +1,7 @@
 #include "Actor.h"
 #include "PhysicComponent.h"
 #include "Defines.h"
+#include "Application.h"
 
 Actor::Actor(std::string Name, int ID)
 {
@@ -36,6 +37,15 @@ void Actor::Tick()
 	}
 
 	b2Component.Component->Tick();
+}
+
+void Actor::Draw()
+{
+	for (int i = 0; i < GetShapeCount(); ++i)
+	{
+		if (sf::Shape* s = GetShapeAtIndex(i))
+			Application::GetInstance()->GetWindow()->draw(*s);
+	}
 }
 
 void Actor::SetObjectName(std::string Name)

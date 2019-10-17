@@ -11,13 +11,13 @@ public:
 	static FAssetLoader* GetInstance();
 
 	~FAssetLoader();
+
 	bool LoadResources();
-	static sf::Texture*	GetTexture(const std::string Name);
+	static sf::Texture*		GetTexture(const std::string Name);
 	static sf::Font*		GetFont(const std::string Name);
 	static sf::Music*		GetMusic(const std::string Name);
 	
 private:
-
 
 	FAssetLoader() {};
 	std::map<const std::string, std::unique_ptr<sf::Texture>> TextureLibrary;

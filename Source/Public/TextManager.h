@@ -6,18 +6,32 @@
 
 struct FTextEffectBundle
 {
+	static int ID;
 	FText* TargetText;
 	std::vector<FTextEffect*> Effects;
+
+	// Generate unique IDs.
+	FTextEffectBundle() { ID++; };
 };
 
-class FTextManager : public ITickable
+class FTextManager : public ITickable, public IDrawable
 {
 public:
-	virtual void Tick() override;
 
-	void Add(FTextEffectBundle Data) { TextEffectBundles.push_back(Data); }
-	std::vector<FTextEffectBundle>& GetTextEffectBundles() { return TextEffectBundles; }
+	static FTextManager* GetInstance();
+	~FTextManager();
+
+	virtual void Tick() override;
+	virtual void Draw() override;
+
+	static void Register(FTextEffectBundle Data);
+	static void Unregister(const int ID);
+	static std::vector<FTextEffectBundle>& GetTextEffectBundles();
+
 private:
+	FTextManager() {};
+	static FTextManager* Instance;
+
 	std::vector<FTextEffectBundle> TextEffectBundles;
 };
 

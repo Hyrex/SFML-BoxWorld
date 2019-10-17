@@ -3,6 +3,8 @@
 #include "Interface.h"
 #include "Actor.h"
 
+#define JUMP_BLOCK_INTERVAL 0.15f
+
 class Character : public Actor
 {
 public:
@@ -27,6 +29,7 @@ private:
 	bool bWantToMoveLeft = false;
 	bool bWantToMoveRight = false;
 	bool bJump = false;
+	float JumpTimedOutTimer = 0.0f;
 	bool bInitialized = false;
 };
 

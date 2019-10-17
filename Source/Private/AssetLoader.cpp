@@ -1,6 +1,6 @@
 #include "AssetLoader.h"
 
-FAssetLoader*  FAssetLoader::Instance = nullptr;
+FAssetLoader* FAssetLoader::Instance = nullptr;
 
 FAssetLoader* FAssetLoader::GetInstance()
 {

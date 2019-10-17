@@ -27,8 +27,8 @@ void Character::Initialize()
 	RegisterShape(FShapeID(CharacterBody, 1)); 
 	
 	// Box2D - MainBody
-	PhysicComponent* BodyComponent = new PhysicComponent(GetObjectName() + "-PhysicComponent");
-	BodyComponent->SetOwningParent(this);
+	PhysicComponent* Component = new PhysicComponent(GetObjectName() + "-PhysicComponent");
+	Component->SetOwningParent(this);
 
 	sf::View ViewPort;
 	Application::GetInstance()->GetWindow()->getViewport(ViewPort);
@@ -37,9 +37,8 @@ void Character::Initialize()
 	CharacterBodyDef.fixedRotation = true;
 	CharacterBodyDef.type = b2_dynamicBody;
 	CharacterBodyDef.position.Set(UNIT_SFML_TO_BOX2D(ViewPort.getSize().x * 0.5f), UNIT_SFML_TO_BOX2D(ViewPort.getSize().y * 0.5f));
-	//CharacterBodyDef.userData = (void*)this;
-	BodyComponent->CreateBody(&CharacterBodyDef);
-	BodyComponent->GetBody()->SetUserData((void*)this);
+	Component->CreateBody(&CharacterBodyDef);
+	Component->GetBody()->SetUserData((void*)this); // Main UserData on BodyInstance
 
 	b2PolygonShape BodyShape;
 	BodyShape.SetAsBox(UNIT_SFML_TO_BOX2D(UNIT_VECTOR.x * 0.5f), UNIT_SFML_TO_BOX2D(UNIT_VECTOR.y * 0.5f));
@@ -49,11 +48,12 @@ void Character::Initialize()
 	CharacterFixtureDef.restitution = 0.4f;
 	CharacterFixtureDef.friction = 0.3f;
 	CharacterFixtureDef.density = 20.0f;
+	CharacterFixtureDef.userData = ((void*)GAMETAG_PLAYER_BODY);
 
-	BodyComponent->SetGenerateOverlap(true);
-	BodyComponent->BindOnBeginoverlap(BeginOverlap);
-	BodyComponent->BindOnEndOverlap(EndOverlap);
-	BodyComponent->CreateFixture(&CharacterFixtureDef);
+	Component->SetGenerateOverlap(true);
+	Component->BindOnBeginoverlap(BeginOverlap);
+	Component->BindOnEndOverlap(EndOverlap);
+	Component->GetBody()->CreateFixture(&CharacterFixtureDef);
 
 	// Visual - Foot 
 	sf::RectangleShape* FootRect = new sf::RectangleShape();
@@ -72,10 +72,11 @@ void Character::Initialize()
 	FootFixtureDef.isSensor = true;
 	FootFixtureDef.shape = &polygonShape;
 	FootFixtureDef.density = 1;
+	FootFixtureDef.userData = (void*)GAMETAG_PLAYER_FOOT;
 
-	b2Fixture* FootSensorFixture = BodyComponent->GetBody()->CreateFixture(&FootFixtureDef);
-	FootSensorFixture->SetUserData((void*)GAMETAG_PLAYER_FOOT);
-	Registerb2Component(Fb2ComponentID(BodyComponent, 1));
+	Component->GetBody()->CreateFixture(&FootFixtureDef);
+
+	Registerb2Component(Fb2ComponentID(Component, 1));
 
 	bInitialized = true;
 }
@@ -86,6 +87,9 @@ void Character::Tick()
 
 	// Update Foot Sensor
 	ObjectShapes[1].Shape->setPosition(UNIT_BOX2D_TO_SFML(b2Component.Component->GetBody()->GetPosition().x), UNIT_BOX2D_TO_SFML(b2Component.Component->GetBody()->GetPosition().y) + 16.f);
+
+	if(JumpTimedOutTimer >= -1.0f)
+		JumpTimedOutTimer -= DELTA_TIME_STEP;
 
 	UpdateMovement();
 }
@@ -107,9 +111,11 @@ void Character::MoveRight()
 
 void Character::Jump()
 {
-	if (bInitialized && !bJump)
+	if (bInitialized && !bJump && JumpTimedOutTimer <= 0.0f)
 	{
 		bJump = true;
+		JumpTimedOutTimer = JUMP_BLOCK_INTERVAL;
+		LOG_CMD("Jump pressed");
 		b2Vec2 Velocity = b2Component.Component->GetBody()->GetLinearVelocity();
 		float TargetVelocity = 5;
 
@@ -141,12 +147,13 @@ void Character::BeginOverlap(PhysicComponent* Component, PhysicComponent* Overla
 {
 	if (OverlapComponent && OverlapComponent->GetOwner())
 	{
-		if (OverlapComponent->GetOwner()->GetID() == GAMETAG_STATIC_OBJECT)
+		if ((int)UserDataA == GAMETAG_PLAYER_FOOT && (int)UserDataB == GAMETAG_STATIC_OBJECT)
 		{
 			if (Character* p = static_cast<Character*>(Component->GetOwner()))
 			{
 				p->bJump = false;
-				LOG_CMD("Character Landed");
+				p->JumpTimedOutTimer = 0.0f;
+				LOG_CMD("Jump unlocked");
 			}
 		} 
 	}

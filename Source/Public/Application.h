@@ -50,7 +50,6 @@ private:
 	void SetupText();
 
 	FTickHandle			TickHandle;
-	FTextManager		TextRenderer;
 	FGameState			GameState;
 	FRenderWindowData	RenderWindowData;
 

@@ -173,14 +173,14 @@ void Application::Tick(const float DeltaTime)
 
 	PositionDataText->SetText(GameState.GetMouseLocationString() + (bIsPaused ? " [Lost Focus]" : " [Has Focus]"));
 
-	TextRenderer.Tick();
+	FTextManager::GetInstance()->Tick();
 
 	if (!bIsPaused)
 	{
 		GameState.Tick();
 
-		for (auto& i : Actors)
-			if (i) i->Tick();
+		for (auto& Itr : Actors)
+			if (Itr) Itr->Tick();
 
 		// Dynamic Text 
 		TimerText->SetText(GameState.GetFormattedElapsedTimeString());
@@ -274,16 +274,9 @@ void Application::Tick(const float DeltaTime)
 	// Rendering
 	AppWindow.clear(sf::Color::Black);
 
-
 	for (auto& Itr : Actors)
-	{
-		for (int i = 0; i < Itr->GetShapeCount(); ++i)
-		{
-			if(sf::Shape* s = Itr->GetShapeAtIndex(i))
-				AppWindow.draw(*s);
-		}
-	}
-
+		Itr->Draw();
+	
 	if (GameState.GetPlayer()->IsInitialized())
 	{
 		AppWindow.draw(*GameState.GetPlayer()->Getb2Component().Component->GetDebugForward());
@@ -294,12 +287,8 @@ void Application::Tick(const float DeltaTime)
 		}
 	}
 
-	for (auto& Itr : TextRenderer.GetTextEffectBundles())
-	{
-		if (Itr.TargetText->IsVisible())
-			AppWindow.draw(Itr.TargetText->Text);
-	}
-
+	FTextManager::GetInstance()->Draw();
+	
 	AppWindow.draw(AngleIndicators, 2, sf::Lines);
 	AppWindow.display();
 }
@@ -355,17 +344,17 @@ void Application::SetupText()
 	FTextEffectBundle e1;
 	e1.TargetText = PositionDataText.get();
 	e1.Effects.push_back(FlashPositionEffect.get());
-	TextRenderer.Add(e1);
+	FTextManager::Register(e1);
 
 	FTextEffectBundle e3;
 	e3.TargetText = StartGameText.get();
 	e3.Effects.push_back(StartGameTranslateOut.get());
 	e3.Effects.push_back(StartGameAlphaFadeOut.get());
-	TextRenderer.Add(e3);
+	FTextManager::Register(e3);
 
 	FTextEffectBundle e4;
 	e4.TargetText = TimerText.get();
-	TextRenderer.Add(e4);
+	FTextManager::Register(e4);
 }
 
 void Application::OnKeyPressed()
