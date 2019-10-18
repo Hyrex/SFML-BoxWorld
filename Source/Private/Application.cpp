@@ -73,19 +73,23 @@ void Application::Initialize()
 	const sf::Vector2f LBorderLocation(BorderThickness * 0.5f, ViewportY * 0.5f);
 	const sf::Vector2f RBorderLocation(ViewportX - BorderThickness * 0.5f, ViewportY * 0.5f);
 
-	std::unique_ptr<StaticBlockActor> TopBorder = std::make_unique<StaticBlockActor>("TopBorderActor", GAMETAG_STATIC_OBJECT);
+	std::unique_ptr<StaticBlockActor> TopBorder = std::make_unique<StaticBlockActor>("TopBorderActor", GAMETAG_STATIC_FLOOR);
 	TopBorder->Construct(XBorder, UBorderLocation);
 	Actors.push_back(std::move(TopBorder));
 
-	std::unique_ptr<StaticBlockActor> LeftBorder = std::make_unique<StaticBlockActor>("LeftBorder", GAMETAG_STATIC_OBJECT);
+	std::unique_ptr<StaticBlockActor> LeftBorder = std::make_unique<StaticBlockActor>("LeftBorder", GAMETAG_STATIC_WALL);
 	LeftBorder->Construct(YBorder, LBorderLocation);
 	Actors.push_back(std::move(LeftBorder));
 
-	std::unique_ptr<StaticBlockActor> RightBorder = std::make_unique<StaticBlockActor>("RightBorder", GAMETAG_STATIC_OBJECT);
+	std::unique_ptr<StaticBlockActor> L1 = std::make_unique<StaticBlockActor>("L1", GAMETAG_STATIC_WALL);
+	L1->Construct(sf::Vector2f(BorderThickness, ViewportY *.7f), sf::Vector2f(BorderThickness * 0.5f + 100.0f, ViewportY * 0.5f));
+	Actors.push_back(std::move(L1));
+
+	std::unique_ptr<StaticBlockActor> RightBorder = std::make_unique<StaticBlockActor>("RightBorder", GAMETAG_STATIC_WALL);
 	RightBorder->Construct(YBorder, RBorderLocation);
 	Actors.push_back(std::move(RightBorder));
 
-	std::unique_ptr<StaticBlockActor> BotBorder = std::make_unique<StaticBlockActor>("BotBorder", GAMETAG_STATIC_OBJECT);
+	std::unique_ptr<StaticBlockActor> BotBorder = std::make_unique<StaticBlockActor>("BotBorder", GAMETAG_STATIC_FLOOR);
 	BotBorder->Construct(XBorder, DBorderLocation);
 	Actors.push_back(std::move(BotBorder));
 
@@ -200,7 +204,23 @@ void Application::Tick(const float DeltaTime)
 		}
 		else
 		{
-			GameState.GetPlayer()->StopJump();
+			if (sf::Joystick::isButtonPressed(0, PS4_Cross))
+			{
+				if (GameState.IsGameStarted())
+				{
+					GameState.GetPlayer()->StartJump();
+				}
+				else
+				{
+					GameState.StartGame();
+					StartGameTranslateOut->Begin();
+					StartGameAlphaFadeOut->Begin();
+				}
+			}
+			else
+			{
+				GameState.GetPlayer()->StopJump();
+			}
 		}
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
@@ -230,19 +250,19 @@ void Application::Tick(const float DeltaTime)
 			if (fLeftAxisX > 10.00f) GameState.GetPlayer()->MoveRight();
 			if (fLeftAxisX < -10.00f) GameState.GetPlayer()->MoveLeft();
 
-			if (sf::Joystick::isButtonPressed(0, PS4_Cross))
-			{
-				if (GameState.IsGameStarted())
-				{
-					GameState.GetPlayer()->StartJump();
-				}
-				else
-				{
-					GameState.StartGame();
-					StartGameTranslateOut->Begin();
-					StartGameAlphaFadeOut->Begin();
-				}
-			}
+			//if (sf::Joystick::isButtonPressed(0, PS4_Cross))
+			//{
+			//	if (GameState.IsGameStarted())
+			//	{
+			//		GameState.GetPlayer()->StartJump();
+			//	}
+			//	else
+			//	{
+			//		GameState.StartGame();
+			//		StartGameTranslateOut->Begin();
+			//		StartGameAlphaFadeOut->Begin();
+			//	}
+			//}
 
 			const float fLT = sf::Joystick::getAxisPosition(0, PS4_LeftTriggerAxis);
 			const float fRT = sf::Joystick::getAxisPosition(0, PS4_RightTriggerAxis);

@@ -103,10 +103,14 @@ void Character::Tick()
 	if(JumpInputTimedOutTimer >= -1.0f)
 		JumpInputTimedOutTimer -= DELTA_TIME_STEP;
 
-	if (bWantToJump)
+	if (bJump)
+	{
 		JumpMaxHoldTimer += DELTA_TIME_STEP;
-	else
-		JumpMaxHoldTimer = JUMP_MAX_HOLD_THRESHOLD_TIME;
+		if (JumpMaxHoldTimer >= JUMP_MAX_HOLD_THRESHOLD_TIME)
+			JumpMaxHoldTimer = JUMP_MAX_HOLD_THRESHOLD_TIME;
+	}
+		
+
 
 #if DEBUG_GAME
 
@@ -149,7 +153,9 @@ void Character::StopJump()
 	if (bInitialized)
 	{
 		bWantToJump = false;
-		//JumpMaxHoldTimer = JUMP_MAX_HOLD_THRESHOLD_TIME;
+
+		if(bJump)
+			JumpMaxHoldTimer = JUMP_MAX_HOLD_THRESHOLD_TIME;
 	}
 }
 
@@ -168,13 +174,13 @@ void Character::UpdateMovement()
 
 		// Gradually accelerate to respective direction.
 		if (bWantToMoveLeft && !bWantToMoveRight)
-			Vx = b2Max(Velocity.x - 2.0f, -8.0f);
+			Vx = b2Max(Velocity.x - 4.0f, -8.0f);
 
 		if (!bWantToMoveLeft && bWantToMoveRight) 
- 			Vx = b2Min(Velocity.x + 2.0f, +8.0f);
+			Vx = b2Min(Velocity.x + 4.0f, +8.0f);
 
 		if (bWantToJump)
-			Vy = Velocity.y + 2.0f; //b2Min(Velocity.y + 16.0f, +16.0f);
+			Vy = Velocity.y + 4.0f; //b2Min(Velocity.y + 16.0f, +16.0f);
 
 		float DeltaVelocityX = Vx - Velocity.x;
 		float DeltaVelocityY = Vy - Velocity.y;
@@ -213,7 +219,7 @@ void Character::BeginOverlap(PhysicComponent* Component, PhysicComponent* Overla
 	if (Component && OverlapComponent && OverlapComponent->GetOwner())
 	{
 		Character* p = static_cast<Character*>(Component->GetOwner());
-		if ((int)UserDataA == GAMETAG_PLAYER_FOOT && (int)UserDataB == GAMETAG_STATIC_OBJECT)
+		if ((int)UserDataA == GAMETAG_PLAYER_FOOT && (int)UserDataB == GAMETAG_STATIC_FLOOR)
 		{
 			if (p)
 			{
@@ -229,6 +235,8 @@ void Character::BeginOverlap(PhysicComponent* Component, PhysicComponent* Overla
 		ss << "Object: "<< OverlapComponent->GetOwner()->GetObjectName() << "\nComponent: "<< OverlapComponent->GetComponentName();
 		ss << "\nBodyUserData: " << (int)OverlapComponent->GetBody()->GetUserData();
 		ss << "\nFixtureUserData: " << (int)UserDataB;
+		ss << "\nMyBodyUserData:" << (int)Component->GetBody()->GetUserData();
+		ss << "\nMyFixtureUserData:" << (int)UserDataA;
 
 		p->OverlapDataText->SetText(ss.str());
 		p->OverlapDataText->Text.setPosition(sf::Vector2f(16.0f, 32.0f * 8));

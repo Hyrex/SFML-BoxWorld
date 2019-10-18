@@ -6,7 +6,7 @@
 class FText;
 
 #define JUMP_BLOCK_INTERVAL				0.15f
-#define JUMP_MAX_HOLD_THRESHOLD_TIME	0.1f
+#define JUMP_MAX_HOLD_THRESHOLD_TIME	0.05f
 
 class Character : public Actor
 {
