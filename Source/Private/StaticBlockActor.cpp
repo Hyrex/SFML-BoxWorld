@@ -40,7 +40,7 @@ void StaticBlockActor::Construct(sf::Vector2f Size, sf::Vector2f Location, const
 	b2FixtureDef tFixtureDef;
 	tFixtureDef.shape = &tFixtureShape;
 	tFixtureDef.restitution = 0.0f;
-	tFixtureDef.friction = 0.3f;
+	tFixtureDef.friction = 0.7f;
 	tFixtureDef.density = 60.0f;
 	tFixtureDef.isSensor = false;
 	tFixtureDef.userData = (void*)GAMETAG_STATIC_OBJECT;

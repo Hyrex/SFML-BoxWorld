@@ -189,7 +189,7 @@ void Application::Tick(const float DeltaTime)
 		{
 			if (GameState.IsGameStarted())
 			{
-				GameState.GetPlayer()->Jump();
+				GameState.GetPlayer()->StartJump();
 			}
 			else
 			{
@@ -197,6 +197,10 @@ void Application::Tick(const float DeltaTime)
 				StartGameTranslateOut->Begin();
 				StartGameAlphaFadeOut->Begin();
 			}
+		}
+		else
+		{
+			GameState.GetPlayer()->StopJump();
 		}
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
@@ -230,7 +234,7 @@ void Application::Tick(const float DeltaTime)
 			{
 				if (GameState.IsGameStarted())
 				{
-					GameState.GetPlayer()->Jump();
+					GameState.GetPlayer()->StartJump();
 				}
 				else
 				{

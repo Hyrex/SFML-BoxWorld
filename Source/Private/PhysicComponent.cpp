@@ -6,8 +6,6 @@
 PhysicComponent::PhysicComponent(std::string ComponentName)
 {
 	this->ComponentName = ComponentName;
-	LOG_CMD("ComponentName Set!");
-	LOG_CMD(ComponentName);
 #if DEBUG_GAME
 	// debug properties
 	const sf::Vector2f DebugArrowSize = DEBUG_ARROW_SIZE * 0.25f;
