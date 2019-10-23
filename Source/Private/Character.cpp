@@ -135,7 +135,24 @@ void Character::MoveRight()
 	}
 }
 
-void Character::StartJump()
+void Character::GrabPressed()
+{
+	if (bInitialized)
+	{
+		bWantGrab = true;
+	}
+}
+
+void Character::GrabRelease()
+{
+	if (bInitialized)
+	{
+		bWantGrab = false;
+		bGrab = false;
+	}
+}
+
+void Character::JumpPressed()
 {	
 	if (bInitialized)
 	{
@@ -148,14 +165,16 @@ void Character::StartJump()
 	}
 }
 
-void Character::StopJump()
+void Character::JumpReleased()
 {
 	if (bInitialized)
 	{
 		bWantToJump = false;
 
-		if(bJump)
+		if (bJump)
+		{
 			JumpMaxHoldTimer = JUMP_MAX_HOLD_THRESHOLD_TIME;
+		}
 	}
 }
 
@@ -163,7 +182,6 @@ void Character::UpdateMovement()
 {
 	if (bInitialized)
 	{
-		// Get speed first...
 		b2Vec2 Velocity = b2Component.Component->GetBody()->GetLinearVelocity();
 
 		// Decay multiplier on individual component.
@@ -174,13 +192,13 @@ void Character::UpdateMovement()
 
 		// Gradually accelerate to respective direction.
 		if (bWantToMoveLeft && !bWantToMoveRight)
-			Vx = b2Max(Velocity.x - 4.0f, -8.0f);
+			Vx = b2Max(Velocity.x - 5.0f, -10.0f);
 
 		if (!bWantToMoveLeft && bWantToMoveRight) 
-			Vx = b2Min(Velocity.x + 4.0f, +8.0f);
+			Vx = b2Min(Velocity.x + 5.0f, +10.0f);
 
 		if (bWantToJump)
-			Vy = Velocity.y + 4.0f; //b2Min(Velocity.y + 16.0f, +16.0f);
+			Vy = Velocity.y + 8.0f; //b2Min(Velocity.y + 16.0f, +16.0f);
 
 		float DeltaVelocityX = Vx - Velocity.x;
 		float DeltaVelocityY = Vy - Velocity.y;
@@ -201,16 +219,19 @@ void Character::UpdateMovement()
 			
 		// Debug information
 		b2Vec2 v = b2Component.Component->GetBody()->GetLinearVelocity();
-		float x = v.x; float y = v.y;
 
 		std::ostringstream ss;
 		ss << std::setprecision(3);
 		ss << std::fixed;
-		ss << "Vx = " << x << "\nVy = " << y << "\n" << (bJump ? "JumpState=Jumping" : "JumpState=NotJumping");
+		ss << "Vx = " << v.x << "\nVy = " << v.y;
+		ss << "\nWantJump=" << (bWantToJump ? "Yes" : "No");
+		ss << "\nJumpState="<< (bJump ? "Jumping" : "NotJumping");
 		ss << "\nJumpHoldTime=" << JumpMaxHoldTimer;
+		ss << "\nWantGrab=" << (bWantGrab ? "Yes" : "No");
+		ss << "\nGrabState=" << (bGrab ? "Grabbed" : "NotGrabbed");
 
 		DebugText->SetText(ss.str());
-		DebugText->Text.setPosition(sf::Vector2f(16.0f, 32.0f*4));
+		DebugText->Text.setPosition(sf::Vector2f(32.0f, 32.0f*2));
 	}
 }
 
@@ -218,28 +239,56 @@ void Character::BeginOverlap(PhysicComponent* Component, PhysicComponent* Overla
 {
 	if (Component && OverlapComponent && OverlapComponent->GetOwner())
 	{
-		Character* p = static_cast<Character*>(Component->GetOwner());
-		if ((int)UserDataA == GAMETAG_PLAYER_FOOT && (int)UserDataB == GAMETAG_STATIC_FLOOR)
-		{
-			if (p)
-			{
-				p->bJump = false;
-				p->JumpInputTimedOutTimer = JUMP_BLOCK_INTERVAL;
-				p->JumpMaxHoldTimer = 0.0f;
-			}
-		} 
-
 		std::ostringstream ss;
 		ss << std::setprecision(3);
 		ss << std::fixed;
-		ss << "Object: "<< OverlapComponent->GetOwner()->GetObjectName() << "\nComponent: "<< OverlapComponent->GetComponentName();
-		ss << "\nBodyUserData: " << (int)OverlapComponent->GetBody()->GetUserData();
-		ss << "\nFixtureUserData: " << (int)UserDataB;
-		ss << "\nMyBodyUserData:" << (int)Component->GetBody()->GetUserData();
-		ss << "\nMyFixtureUserData:" << (int)UserDataA;
+		ss << "Object: " << OverlapComponent->GetOwner()->GetObjectName();
+		ss << "\nComponent= " << OverlapComponent->GetComponentName();
+		ss << "\nBodyUserData= " << (int)OverlapComponent->GetBody()->GetUserData();
+		ss << "\nFixtureUserData= " << GetTagName((int)UserDataB);
+		ss << "\nMyBodyUserData=" << (int)Component->GetBody()->GetUserData();
+		ss << "\nMyFixtureUserData=" << GetTagName((int)UserDataA);
+
+		Character* p = static_cast<Character*>(Component->GetOwner());
+		if ((int)UserDataA == GAMETAG_PLAYER_FOOT && (int)UserDataB == GAMETAG_STATIC_FLOOR)
+		{
+			if (!p) return;
+			
+			p->bJump = false;
+			p->JumpInputTimedOutTimer = JUMP_BLOCK_INTERVAL;
+			p->JumpMaxHoldTimer = 0.0f;
+		}
+
+		if ((int)UserDataB == GAMETAG_STATIC_WALL)
+		{
+			std::string v = GetTagName((int)UserDataA);
+
+			bool bFinishCheckList = false;
+			b2Fixture* Fixture = Component->GetBody()->GetFixtureList();// ->GetNext();
+			while (!bFinishCheckList)
+			{
+				if ((int)Fixture->GetUserData() == GAMETAG_PLAYER_BODY)
+				{
+					if (!p) return;
+
+					if (p->bWantGrab)
+					{
+						p->bJump = false;
+						p->bWantGrab = false;
+						
+						/// TODO: 
+						// Do something to the velocity to make it pin on the wall and make it stay that way until release
+					}
+				}
+
+				Fixture = Fixture->GetNext();
+				if (Fixture == nullptr)
+					bFinishCheckList = true;
+			}
+		}
 
 		p->OverlapDataText->SetText(ss.str());
-		p->OverlapDataText->Text.setPosition(sf::Vector2f(16.0f, 32.0f * 8));
+		p->OverlapDataText->Text.setPosition(sf::Vector2f(32.0f, 32.0f * 8));
 	}
 }
 

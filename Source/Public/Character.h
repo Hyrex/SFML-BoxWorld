@@ -19,8 +19,10 @@ public:
 	void Initialize();
 	void MoveLeft();
 	void MoveRight();
-	void StartJump();
-	void StopJump();
+	void GrabPressed();
+	void GrabRelease();
+	void JumpPressed();
+	void JumpReleased();
 	void UpdateMovement();
 
 	bool IsInitialized() const { return bInitialized; }
@@ -36,12 +38,18 @@ public:
 #endif
 
 private:
+	// Request pending flags
 	bool bWantToMoveLeft = false;
 	bool bWantToMoveRight = false;
 	bool bWantToJump = false;
+	bool bWantGrab = false;
+
+	// Actual states
+	bool bGrab = false;
 	bool bJump = false;
 	bool bInitialized = false;
 	
+	// Timedout actions.
 	float JumpMaxHoldTimer = 0.0f;
 	float JumpInputTimedOutTimer = 10.0f;
 

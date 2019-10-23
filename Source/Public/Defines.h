@@ -31,6 +31,19 @@
 #define GAMETAG_PLAYER_BODY		11
 #define GAMETAG_PLAYER_FOOT		12
 
+inline std::string GetTagName(int Value)
+{
+	if (Value == GAMETAG_STATIC_FLOOR) 
+		return "StaticFloor"; 
+	else if (Value == GAMETAG_STATIC_WALL) 
+		return "StaticWall";
+	else if (Value == GAMETAG_PLAYER_BODY) 
+		return "PlayerBody";
+	else if (Value == GAMETAG_PLAYER_FOOT)	
+		return "PlayerFoot";
+
+	return "Undefined";
+}
 
 #define TEXT_SIZE_S 9
 #define TEXT_SIZE_M 16

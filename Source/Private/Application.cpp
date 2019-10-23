@@ -15,7 +15,7 @@ Application::Application()
 {
 	ContactListener = std::make_unique<PhysicComponentContactListener>();
 
-	Gravity = b2Vec2(0.f, 9.81f);
+	Gravity = b2Vec2(0.f, 30.0f);
 	World = std::make_shared<b2World>(Gravity);
 	World->SetContactListener(ContactListener.get());
 }
@@ -81,9 +81,9 @@ void Application::Initialize()
 	LeftBorder->Construct(YBorder, LBorderLocation);
 	Actors.push_back(std::move(LeftBorder));
 
-	std::unique_ptr<StaticBlockActor> L1 = std::make_unique<StaticBlockActor>("L1", GAMETAG_STATIC_WALL);
-	L1->Construct(sf::Vector2f(BorderThickness, ViewportY *.7f), sf::Vector2f(BorderThickness * 0.5f + 100.0f, ViewportY * 0.5f));
-	Actors.push_back(std::move(L1));
+	std::unique_ptr<StaticBlockActor> R1 = std::make_unique<StaticBlockActor>("R1", GAMETAG_STATIC_WALL);
+	R1->Construct(sf::Vector2f(BorderThickness, ViewportY *.7f), sf::Vector2f(ViewportX - BorderThickness * 0.5f - 200.0f, ViewportY * 0.5f));
+	Actors.push_back(std::move(R1));
 
 	std::unique_ptr<StaticBlockActor> RightBorder = std::make_unique<StaticBlockActor>("RightBorder", GAMETAG_STATIC_WALL);
 	RightBorder->Construct(YBorder, RBorderLocation);
@@ -193,7 +193,7 @@ void Application::Tick(const float DeltaTime)
 		{
 			if (GameState.IsGameStarted())
 			{
-				GameState.GetPlayer()->StartJump();
+				GameState.GetPlayer()->JumpPressed();
 			}
 			else
 			{
@@ -208,7 +208,7 @@ void Application::Tick(const float DeltaTime)
 			{
 				if (GameState.IsGameStarted())
 				{
-					GameState.GetPlayer()->StartJump();
+					GameState.GetPlayer()->JumpPressed();
 				}
 				else
 				{
@@ -219,7 +219,7 @@ void Application::Tick(const float DeltaTime)
 			}
 			else
 			{
-				GameState.GetPlayer()->StopJump();
+				GameState.GetPlayer()->JumpReleased();
 			}
 		}
 
@@ -240,6 +240,25 @@ void Application::Tick(const float DeltaTime)
 				GameState.GetPlayer()->MoveRight();
 		}
 
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+		{
+			if (GameState.IsGameStarted())
+				GameState.GetPlayer()->GrabPressed();
+		}
+		else
+		{
+			if (sf::Joystick::isButtonPressed(0, PS4_Square))
+			{
+				if (GameState.IsGameStarted())
+					GameState.GetPlayer()->GrabPressed();
+			}
+			else
+			{
+				if (GameState.IsGameStarted())
+					GameState.GetPlayer()->GrabRelease();
+			}
+		}
+
 		if (sf::Joystick::isConnected(0) && GameState.IsGameStarted())
 		{
 			const float fDPadXValue = sf::Joystick::getAxisPosition(0, PS4_DPadX);
@@ -249,20 +268,6 @@ void Application::Tick(const float DeltaTime)
 			const float fLeftAxisX = sf::Joystick::getAxisPosition(0, PS4_LeftXAxis);
 			if (fLeftAxisX > 10.00f) GameState.GetPlayer()->MoveRight();
 			if (fLeftAxisX < -10.00f) GameState.GetPlayer()->MoveLeft();
-
-			//if (sf::Joystick::isButtonPressed(0, PS4_Cross))
-			//{
-			//	if (GameState.IsGameStarted())
-			//	{
-			//		GameState.GetPlayer()->StartJump();
-			//	}
-			//	else
-			//	{
-			//		GameState.StartGame();
-			//		StartGameTranslateOut->Begin();
-			//		StartGameAlphaFadeOut->Begin();
-			//	}
-			//}
 
 			const float fLT = sf::Joystick::getAxisPosition(0, PS4_LeftTriggerAxis);
 			const float fRT = sf::Joystick::getAxisPosition(0, PS4_RightTriggerAxis);
@@ -344,7 +349,7 @@ void Application::SetupText()
 	const float ViewportX = (float)RenderWindowData.Width;
 	const float ViewportY = (float)RenderWindowData.Height;
 
-	PositionDataText->Text.setPosition(sf::Vector2f(64.0f, 64.0f));
+	PositionDataText->Text.setPosition(sf::Vector2f(ViewportX - 200.0f, 64.0f));
 
 	// Static String Texts
 	TimerText->Text.setPosition(sf::Vector2f(32.0f, ViewportY - 64.0f));
