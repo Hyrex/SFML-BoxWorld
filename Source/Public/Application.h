@@ -64,6 +64,12 @@ private:
 	std::vector<std::unique_ptr<Actor>>					Actors;
 
 	sf::Vertex AngleIndicators[2];
+
+	// By right this should be register into input action maps.
+	bool bJumpPressed = false;
+	bool bGrabPressed = false;
+	bool bDashPressed = false;
+
 	bool bMiddleMousePressed = false;
 	bool bIsPaused = false;
 

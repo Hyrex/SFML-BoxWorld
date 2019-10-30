@@ -1,9 +1,12 @@
 #include "Character.h"
+#include "Actor.h"
 #include "Application.h"
 #include "Defines.h"
 #include "TextManager.h"
 #include <sstream>
 #include <iomanip>
+
+
 
 Character::Character(std::string Name, int ID)
 {
@@ -23,10 +26,14 @@ void Character::Initialize()
 	if (bInitialized)
 		return;
 
+	// Change scaling to modify character size.
+	const float Scale = 0.75f;
+	const sf::Vector2f Size = UNIT_VECTOR * Scale;
+
 	// Visual - MainBody
 	sf::RectangleShape* CharacterBody = new sf::RectangleShape();
-	CharacterBody->setSize(UNIT_VECTOR);
-	CharacterBody->setOrigin(UNIT_VECTOR * 0.5f);
+	CharacterBody->setSize(Size);
+	CharacterBody->setOrigin(CharacterBody->getSize() * 0.5f);
 	CharacterBody->setFillColor(sf::Color::Transparent);
 	CharacterBody->setOutlineThickness(1);
 	CharacterBody->setOutlineColor(sf::Color::White);
@@ -47,7 +54,7 @@ void Character::Initialize()
 	Component->GetBody()->SetUserData((void*)this); // Main UserData on BodyInstance
 
 	b2PolygonShape BodyShape;
-	BodyShape.SetAsBox(UNIT_SFML_TO_BOX2D(UNIT_VECTOR.x * 0.5f), UNIT_SFML_TO_BOX2D(UNIT_VECTOR.y * 0.5f));
+	BodyShape.SetAsBox(UNIT_SFML_TO_BOX2D(Size.x * 0.5f), UNIT_SFML_TO_BOX2D(Size.y * 0.5f));
 
 	b2FixtureDef CharacterFixtureDef;
 	CharacterFixtureDef.shape = &BodyShape;
@@ -69,16 +76,18 @@ void Character::Initialize()
 
 	// Visual - Foot 
 	sf::RectangleShape* FootRect = new sf::RectangleShape();
-	FootRect->setSize(UNIT_VECTOR * 0.5f);
-	FootRect->setOrigin(UNIT_VECTOR * 0.25f);
+	FootRect->setSize(Size * 0.5f);
+
+	const sf::Vector2f Offset = Scale > 0 ? sf::Vector2f(0.0f, (Scale - 1.0f) * 16.0f) : sf::Vector2f(0.0f, 0.0f);
+	FootRect->setOrigin(FootRect->getSize() * 0.5f - Offset);
 	FootRect->setFillColor(sf::Color::Red);
 	FootRect->setOutlineColor(sf::Color::White);
 	RegisterShape(FShapeID(FootRect, 2));
 
 	// Box2D - Foot
-	const float BoxSize = 16.0f;
+	const float BoxSize = Size.x * 0.5f;
 	b2PolygonShape polygonShape;
-	polygonShape.SetAsBox(UNIT_SFML_TO_BOX2D(BoxSize), UNIT_SFML_TO_BOX2D(BoxSize) , b2Vec2(0, UNIT_SFML_TO_BOX2D (BoxSize)), 0);
+	polygonShape.SetAsBox(UNIT_SFML_TO_BOX2D(BoxSize), UNIT_SFML_TO_BOX2D(BoxSize) , b2Vec2(0, UNIT_SFML_TO_BOX2D (BoxSize * 0.5f)), 0);
 
 	b2FixtureDef FootFixtureDef;
 	FootFixtureDef.isSensor = true;
@@ -87,7 +96,6 @@ void Character::Initialize()
 	FootFixtureDef.userData = (void*)GAMETAG_PLAYER_FOOT;
 
 	Component->GetBody()->CreateFixture(&FootFixtureDef);
-
 	Registerb2Component(Fb2ComponentID(Component, 1));
 
 	bInitialized = true;
@@ -97,7 +105,7 @@ void Character::Tick()
 {
 	Actor::Tick();
 
-	// Update Foot Sensor
+	// Update Foot Sensor Position
 	ObjectShapes[1].Shape->setPosition(UNIT_BOX2D_TO_SFML(b2Component.Component->GetBody()->GetPosition().x), UNIT_BOX2D_TO_SFML(b2Component.Component->GetBody()->GetPosition().y) + 16.f);
 
 	if(JumpInputTimedOutTimer >= -1.0f)
@@ -109,13 +117,40 @@ void Character::Tick()
 		if (JumpMaxHoldTimer >= JUMP_MAX_HOLD_THRESHOLD_TIME)
 			JumpMaxHoldTimer = JUMP_MAX_HOLD_THRESHOLD_TIME;
 	}
-		
 
+	if (DashCoolDownTimer <= 0.0f && bWantToDash)
+	{
+		bDash = true;
+		DashCoolDownTimer = DASH_COOLDOWN;
+		DashExecuteTimer = DASH_EXECUTE_LOCK;
 
-#if DEBUG_GAME
+		// No longer affect by gravity and then cut off original speed.
+		b2Component.Component->GetBody()->SetGravityScale(0.0f);
+		b2Component.Component->GetBody()->SetLinearVelocity(b2Vec2(0, 0));
 
+		float ImpulseX = b2Component.Component->GetBody()->GetMass() * DASH_SPEED;
+		if (LastFaceDirection == EFD_Right)
+		{
+			b2Component.Component->GetBody()->ApplyLinearImpulse(b2Vec2(ImpulseX, 0), b2Component.Component->GetBody()->GetWorldCenter(), true);
+		}
+		else if (LastFaceDirection == EFD_Left)
+		{
+			b2Component.Component->GetBody()->ApplyLinearImpulse(b2Vec2(-ImpulseX, 0), b2Component.Component->GetBody()->GetWorldCenter(), true);
+		}
+	}
 
-#endif
+	if (DashCoolDownTimer > 0.0f)
+		DashCoolDownTimer -= DELTA_TIME_STEP;
+
+	if (DashExecuteTimer > 0.0f)
+		DashExecuteTimer -= DELTA_TIME_STEP;
+
+	if (DashExecuteTimer < 0.0f)
+	{
+		//
+		b2Component.Component->GetBody()->SetGravityScale(1.0f);
+		bDash = false;
+	}
 
 	UpdateMovement();
 }
@@ -124,6 +159,7 @@ void Character::MoveLeft()
 	if (bInitialized)
 	{
 		bWantToMoveLeft = true;
+		LastFaceDirection = EFD_Left;
 	}
 }
 
@@ -132,6 +168,23 @@ void Character::MoveRight()
 	if (bInitialized)
 	{
 		bWantToMoveRight = true;
+		LastFaceDirection = EFD_Right;
+	}
+}
+
+void Character::DashPressed()
+{
+	if (bInitialized)
+	{
+		bWantToDash = true;
+	}
+}
+
+void Character::DashReleased()
+{
+	if (bInitialized)
+	{
+		bWantToDash = false;
 	}
 }
 
@@ -139,7 +192,7 @@ void Character::GrabPressed()
 {
 	if (bInitialized)
 	{
-		bWantGrab = true;
+		bWantToGrab = true;
 	}
 }
 
@@ -147,8 +200,10 @@ void Character::GrabRelease()
 {
 	if (bInitialized)
 	{
-		bWantGrab = false;
+		bWantToGrab = false;
 		bGrab = false;
+
+		b2Component.Component->GetBody()->SetGravityScale(1.0f);
 	}
 }
 
@@ -192,10 +247,10 @@ void Character::UpdateMovement()
 
 		// Gradually accelerate to respective direction.
 		if (bWantToMoveLeft && !bWantToMoveRight)
-			Vx = b2Max(Velocity.x - 5.0f, -10.0f);
+			Vx = b2Max(Velocity.x - WALKING_SPEED_DELTA, -WALKING_SPEED_MAX);
 
 		if (!bWantToMoveLeft && bWantToMoveRight) 
-			Vx = b2Min(Velocity.x + 5.0f, +10.0f);
+			Vx = b2Min(Velocity.x + WALKING_SPEED_DELTA, +WALKING_SPEED_MAX);
 
 		if (bWantToJump)
 			Vy = Velocity.y + 8.0f; //b2Min(Velocity.y + 16.0f, +16.0f);
@@ -204,8 +259,9 @@ void Character::UpdateMovement()
 		float DeltaVelocityY = Vy - Velocity.y;
 		float ImpulseX = b2Component.Component->GetBody()->GetMass() * DeltaVelocityX;
 		float ImpulseY = b2Component.Component->GetBody()->GetMass() * DeltaVelocityY;
-		
-		if(!bJump) // if not in jumping state, continue accelerate X-axis movement.
+
+		// Allow horizontal movement even if jumping but not dashing.
+		if(!bDash)
 			b2Component.Component->GetBody()->ApplyLinearImpulse(b2Vec2(ImpulseX, 0), b2Component.Component->GetBody()->GetWorldCenter(), true);
 
 		if (bJump && bWantToJump && JumpMaxHoldTimer < JUMP_MAX_HOLD_THRESHOLD_TIME) // continue pumping it if want to jump.
@@ -227,8 +283,11 @@ void Character::UpdateMovement()
 		ss << "\nWantJump=" << (bWantToJump ? "Yes" : "No");
 		ss << "\nJumpState="<< (bJump ? "Jumping" : "NotJumping");
 		ss << "\nJumpHoldTime=" << JumpMaxHoldTimer;
-		ss << "\nWantGrab=" << (bWantGrab ? "Yes" : "No");
+		ss << "\nWantGrab=" << (bWantToGrab ? "Yes" : "No");
 		ss << "\nGrabState=" << (bGrab ? "Grabbed" : "NotGrabbed");
+		ss << "\nWantDash=" << (bWantToDash ? "Yes" : "No");
+		ss << "\nDashCoolDown=" << DashCoolDownTimer;
+		ss << "\nFacingDirection=" << (LastFaceDirection == EFaceDirection::EFD_Right) ? "Right" : "Left";
 
 		DebugText->SetText(ss.str());
 		DebugText->Text.setPosition(sf::Vector2f(32.0f, 32.0f*2));
@@ -249,14 +308,14 @@ void Character::BeginOverlap(PhysicComponent* Component, PhysicComponent* Overla
 		ss << "\nMyBodyUserData=" << (int)Component->GetBody()->GetUserData();
 		ss << "\nMyFixtureUserData=" << GetTagName((int)UserDataA);
 
-		Character* p = static_cast<Character*>(Component->GetOwner());
+		Character* pCharacter = static_cast<Character*>(Component->GetOwner());
 		if ((int)UserDataA == GAMETAG_PLAYER_FOOT && (int)UserDataB == GAMETAG_STATIC_FLOOR)
 		{
-			if (!p) return;
+			if (!pCharacter) return;
 			
-			p->bJump = false;
-			p->JumpInputTimedOutTimer = JUMP_BLOCK_INTERVAL;
-			p->JumpMaxHoldTimer = 0.0f;
+			pCharacter->bJump = false;
+			pCharacter->JumpInputTimedOutTimer = JUMP_BLOCK_INTERVAL;
+			pCharacter->JumpMaxHoldTimer = 0.0f;
 		}
 
 		if ((int)UserDataB == GAMETAG_STATIC_WALL)
@@ -269,12 +328,16 @@ void Character::BeginOverlap(PhysicComponent* Component, PhysicComponent* Overla
 			{
 				if ((int)Fixture->GetUserData() == GAMETAG_PLAYER_BODY)
 				{
-					if (!p) return;
+					if (!pCharacter) return;
 
-					if (p->bWantGrab)
+					if (pCharacter->bWantToGrab)
 					{
-						p->bJump = false;
-						p->bWantGrab = false;
+						pCharacter->bJump = false;
+						pCharacter->bWantToGrab = false;
+						pCharacter->bGrab = true;
+						
+						////b2Vec2 v = pCharacter->Getb2Component().Component->GetBody()->GetLinearVelocity();
+						pCharacter->Getb2Component().Component->GetBody()->SetGravityScale(0.0f);
 						
 						/// TODO: 
 						// Do something to the velocity to make it pin on the wall and make it stay that way until release
@@ -287,8 +350,8 @@ void Character::BeginOverlap(PhysicComponent* Component, PhysicComponent* Overla
 			}
 		}
 
-		p->OverlapDataText->SetText(ss.str());
-		p->OverlapDataText->Text.setPosition(sf::Vector2f(32.0f, 32.0f * 8));
+		pCharacter->OverlapDataText->SetText(ss.str());
+		pCharacter->OverlapDataText->Text.setPosition(sf::Vector2f(32.0f, 32.0f * 8));
 	}
 }
 

@@ -5,6 +5,12 @@
 #include "Interface.h"
 #include "PhysicComponent.h"
 
+enum EFaceDirection
+{
+	EFD_Left,
+	EFD_Right
+};
+
 struct FShapeID
 {
 	sf::Shape* Shape = nullptr;
@@ -60,9 +66,11 @@ public:
 protected:
 	std::string							ObjectName;
 	std::vector<FShapeID>				ObjectShapes;
-	Fb2ComponentID						b2Component; /// ISSUE 5 : Multiple Component bundle means multiple body? We only want multiple fixture!
+	Fb2ComponentID						b2Component; 
 	sf::Vector2f						WorldLocation; //represent object world center, must b2Vec2 compatible.
 	float								WorldRotation;
+
+	EFaceDirection						LastFaceDirection = EFD_Right;
 	int ID = 0;
 };
 

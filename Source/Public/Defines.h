@@ -8,6 +8,10 @@
 #include <ctype.h>
 #include <assert.h>
 
+#pragma warning(disable:4311)
+#pragma warning(disable:4312)
+#pragma warning(disable:4302)
+
 //flow control
 #define TOGGLE(A,B,flag)			if(flag) A(); else B(); flag = !flag;
 

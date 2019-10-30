@@ -179,7 +179,7 @@ void Application::Tick(const float DeltaTime)
 
 	FTextManager::GetInstance()->Tick();
 
-	if (!bIsPaused)
+	if (true /*!bIsPaused */)
 	{
 		GameState.Tick();
 
@@ -189,11 +189,16 @@ void Application::Tick(const float DeltaTime)
 		// Dynamic Text 
 		TimerText->SetText(GameState.GetFormattedElapsedTimeString());
 
+		////////////////
+		// Inputs
+
+		/// JUMP
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 		{
 			if (GameState.IsGameStarted())
 			{
 				GameState.GetPlayer()->JumpPressed();
+				bJumpPressed = true;
 			}
 			else
 			{
@@ -209,6 +214,7 @@ void Application::Tick(const float DeltaTime)
 				if (GameState.IsGameStarted())
 				{
 					GameState.GetPlayer()->JumpPressed();
+					bJumpPressed = true;
 				}
 				else
 				{
@@ -219,7 +225,71 @@ void Application::Tick(const float DeltaTime)
 			}
 			else
 			{
-				GameState.GetPlayer()->JumpReleased();
+				if (GameState.IsGameStarted() && bJumpPressed)
+				{
+					GameState.GetPlayer()->JumpReleased();
+					bJumpPressed = false;
+				}
+			}
+		}
+
+		/// GRAB
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
+		{
+			if (GameState.IsGameStarted())
+			{
+				GameState.GetPlayer()->GrabPressed();
+				bGrabPressed = true;
+			}
+		}
+		else
+		{
+			if (sf::Joystick::isButtonPressed(0, PS4_Square))
+			{
+				if (GameState.IsGameStarted())
+				{
+					GameState.GetPlayer()->GrabPressed();
+					bGrabPressed = true;
+				}
+					
+			}
+			else
+			{
+				if (GameState.IsGameStarted() && bGrabPressed)
+				{
+					GameState.GetPlayer()->GrabRelease();
+					bGrabPressed = false;
+				}
+			}
+		}
+
+		/// Dash
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
+		{
+			if (GameState.IsGameStarted())
+			{
+				GameState.GetPlayer()->DashPressed();
+				bDashPressed = true;
+			}
+		}
+		else
+		{
+			if (sf::Joystick::isButtonPressed(0, PS4_RightTriggerAxis))
+			{
+				if (GameState.IsGameStarted())
+				{
+					GameState.GetPlayer()->DashReleased();
+					bDashPressed = true;
+				}
+
+			}
+			else
+			{
+				if (GameState.IsGameStarted() && bDashPressed)
+				{
+					GameState.GetPlayer()->DashReleased();
+					bDashPressed = false;
+				}
 			}
 		}
 
@@ -240,24 +310,6 @@ void Application::Tick(const float DeltaTime)
 				GameState.GetPlayer()->MoveRight();
 		}
 
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift))
-		{
-			if (GameState.IsGameStarted())
-				GameState.GetPlayer()->GrabPressed();
-		}
-		else
-		{
-			if (sf::Joystick::isButtonPressed(0, PS4_Square))
-			{
-				if (GameState.IsGameStarted())
-					GameState.GetPlayer()->GrabPressed();
-			}
-			else
-			{
-				if (GameState.IsGameStarted())
-					GameState.GetPlayer()->GrabRelease();
-			}
-		}
 
 		if (sf::Joystick::isConnected(0) && GameState.IsGameStarted())
 		{
@@ -297,7 +349,6 @@ void Application::Tick(const float DeltaTime)
 		AngleIndicators[0].position = sf::Vector2f(0.0f, 0.0f);
 		AngleIndicators[1].position = sf::Vector2f(sf::Mouse::getPosition(AppWindow));
 		
-	
 	}
 
 	// Rendering
