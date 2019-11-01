@@ -23,7 +23,7 @@ void PhysicComponent::Tick()
 #if DEBUG_GAME
 		// Box2D uses radians for rotation, SFML uses degree
 		DebugForward->setRotation(Body->GetAngle() * 180 / b2_pi);
-		DebugForward->setPosition(UNIT_BOX2D_TO_SFML(Body->GetPosition().x), UNIT_BOX2D_TO_SFML(Body->GetPosition().y));
+		DebugForward->setPosition(UNIT_SFML(Body->GetPosition().x), UNIT_SFML(Body->GetPosition().y));
 #endif
 
 		if (TickCallback != 0)

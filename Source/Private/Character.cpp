@@ -26,13 +26,9 @@ void Character::Initialize()
 	if (bInitialized)
 		return;
 
-	// Change scaling to modify character size.
-	const float Scale = 0.75f;
-	const sf::Vector2f Size = UNIT_VECTOR * Scale;
-
 	// Visual - MainBody
 	sf::RectangleShape* CharacterBody = new sf::RectangleShape();
-	CharacterBody->setSize(Size);
+	CharacterBody->setSize(CharacterSize);
 	CharacterBody->setOrigin(CharacterBody->getSize() * 0.5f);
 	CharacterBody->setFillColor(sf::Color::Transparent);
 	CharacterBody->setOutlineThickness(1);
@@ -49,12 +45,12 @@ void Character::Initialize()
 	b2BodyDef CharacterBodyDef;
 	CharacterBodyDef.fixedRotation = true;
 	CharacterBodyDef.type = b2_dynamicBody;
-	CharacterBodyDef.position.Set(UNIT_SFML_TO_BOX2D(ViewPort.getCenter().x), UNIT_SFML_TO_BOX2D(ViewPort.getSize().y *0.5f));
+	CharacterBodyDef.position.Set(UNIT_BOX2D(ViewPort.getCenter().x), UNIT_BOX2D(ViewPort.getSize().y *0.5f));
 	Component->CreateBody(&CharacterBodyDef);
 	Component->GetBody()->SetUserData((void*)this); // Main UserData on BodyInstance
 
 	b2PolygonShape BodyShape;
-	BodyShape.SetAsBox(UNIT_SFML_TO_BOX2D(Size.x * 0.5f), UNIT_SFML_TO_BOX2D(Size.y * 0.5f));
+	BodyShape.SetAsBox(UNIT_BOX2D(CharacterSize.x * 0.5f), UNIT_BOX2D(CharacterSize.y * 0.5f));
 
 	b2FixtureDef CharacterFixtureDef;
 	CharacterFixtureDef.shape = &BodyShape;
@@ -76,18 +72,18 @@ void Character::Initialize()
 
 	// Visual - Foot 
 	sf::RectangleShape* FootRect = new sf::RectangleShape();
-	FootRect->setSize(Size * 0.5f);
+	FootRect->setSize(CharacterSize * 0.5f);
 
-	const sf::Vector2f Offset = Scale > 0 ? sf::Vector2f(0.0f, (Scale - 1.0f) * 16.0f) : sf::Vector2f(0.0f, 0.0f);
+	const sf::Vector2f Offset = CharacterScale > 0 ? sf::Vector2f(0.0f, (CharacterScale - 1.0f) * 16.0f) : sf::Vector2f(0.0f, 0.0f);
 	FootRect->setOrigin(FootRect->getSize() * 0.5f - Offset);
 	FootRect->setFillColor(sf::Color::Red);
 	FootRect->setOutlineColor(sf::Color::White);
 	RegisterShape(FShapeID(FootRect, 2));
 
 	// Box2D - Foot
-	const float BoxSize = Size.x * 0.5f;
+	const float BoxSize = CharacterSize.x * 0.5f;
 	b2PolygonShape polygonShape;
-	polygonShape.SetAsBox(UNIT_SFML_TO_BOX2D(BoxSize), UNIT_SFML_TO_BOX2D(BoxSize) , b2Vec2(0, UNIT_SFML_TO_BOX2D (BoxSize * 0.5f)), 0);
+	polygonShape.SetAsBox(UNIT_BOX2D(BoxSize), UNIT_BOX2D(BoxSize) , b2Vec2(0, UNIT_BOX2D (BoxSize * 0.5f)), 0);
 
 	b2FixtureDef FootFixtureDef;
 	FootFixtureDef.isSensor = true;
@@ -106,7 +102,7 @@ void Character::Tick()
 	Actor::Tick();
 
 	// Update Foot Sensor Position
-	ObjectShapes[1].Shape->setPosition(UNIT_BOX2D_TO_SFML(b2Component.Component->GetBody()->GetPosition().x), UNIT_BOX2D_TO_SFML(b2Component.Component->GetBody()->GetPosition().y) + 16.f);
+	ObjectShapes[1].Shape->setPosition(UNIT_SFML(GetPhysicComponent()->GetBody()->GetPosition().x), UNIT_SFML(GetPhysicComponent()->GetBody()->GetPosition().y) + 16.f);
 
 	if(JumpInputTimedOutTimer >= -1.0f)
 		JumpInputTimedOutTimer -= DELTA_TIME_STEP;
@@ -125,17 +121,17 @@ void Character::Tick()
 		DashExecuteTimer = DASH_EXECUTE_LOCK;
 
 		// No longer affect by gravity and then cut off original speed.
-		b2Component.Component->GetBody()->SetGravityScale(0.0f);
-		b2Component.Component->GetBody()->SetLinearVelocity(b2Vec2(0, 0));
+		GetPhysicComponent()->GetBody()->SetGravityScale(0.0f);
+		GetPhysicComponent()->GetBody()->SetLinearVelocity(b2Vec2(0, 0));
 
-		float ImpulseX = b2Component.Component->GetBody()->GetMass() * DASH_SPEED;
+		float ImpulseX = GetPhysicComponent()->GetBody()->GetMass() * DASH_SPEED;
 		if (LastFaceDirection == EFD_Right)
 		{
-			b2Component.Component->GetBody()->ApplyLinearImpulse(b2Vec2(ImpulseX, 0), b2Component.Component->GetBody()->GetWorldCenter(), true);
+			GetPhysicComponent()->GetBody()->ApplyLinearImpulse(b2Vec2(ImpulseX, 0), GetPhysicComponent()->GetBody()->GetWorldCenter(), true);
 		}
 		else if (LastFaceDirection == EFD_Left)
 		{
-			b2Component.Component->GetBody()->ApplyLinearImpulse(b2Vec2(-ImpulseX, 0), b2Component.Component->GetBody()->GetWorldCenter(), true);
+			GetPhysicComponent()->GetBody()->ApplyLinearImpulse(b2Vec2(-ImpulseX, 0), GetPhysicComponent()->GetBody()->GetWorldCenter(), true);
 		}
 	}
 
@@ -148,12 +144,59 @@ void Character::Tick()
 	if (DashExecuteTimer < 0.0f)
 	{
 		//
-		b2Component.Component->GetBody()->SetGravityScale(1.0f);
+		GetPhysicComponent()->GetBody()->SetGravityScale(1.0f);
 		bDash = false;
 	}
 
 	UpdateMovement();
+
+	const b2Vec2 CurrentVelocity = GetPhysicComponent()->GetBody()->GetLinearVelocity();
+	if (CurrentVelocity.y == 0.0f)
+		bJump = false;
+
+	// Foot Ray cast
+	const float RayLength = 0.25f;
+	b2Vec2 StartLocation(Getb2WorldLocation() + b2Vec2(0, UNIT_BOX2D(CharacterSize.y  * 0.5f)));
+	b2Vec2 EndLocation = StartLocation + b2Vec2(0, (RayLength));
+
+	FootLine[0].position = UNIT_SFML_VEC(StartLocation);
+	FootLine[1].position = UNIT_SFML_VEC(EndLocation);
+
+	// Using own fixture to ray cast downward
+	b2RayCastInput HitInput;
+	HitInput.p1 = StartLocation;
+	HitInput.p2 = EndLocation;
+	HitInput.maxFraction = 1;
+
+	for (b2Fixture* f = GetPhysicComponent()->GetBody()->GetFixtureList(); f; f = f->GetNext())
+	{
+		b2RayCastOutput HitResult;
+		if (!f->RayCast(&HitResult, HitInput,0))
+			continue;
+		
+		bJump = false;
+	}
+
 }
+
+void Character::Draw()
+{
+	if (bInitialized)
+	{
+		sf::RenderWindow* const pWindow = Application::GetInstance()->GetWindow();
+		
+		for (int i = 0; i < GetShapeCount(); ++i)
+		{
+			if (sf::Shape* s = GetShapeAtIndex(i))
+				pWindow->draw(*s);
+		}
+
+		pWindow->draw(*GetPhysicComponent()->GetDebugForward());
+		pWindow->draw(FootLine, 2, sf::Lines);
+	}
+	Actor::Draw();
+}
+
 void Character::MoveLeft()
 {
 	if (bInitialized)
@@ -203,7 +246,7 @@ void Character::GrabRelease()
 		bWantToGrab = false;
 		bGrab = false;
 
-		b2Component.Component->GetBody()->SetGravityScale(1.0f);
+		GetPhysicComponent()->GetBody()->SetGravityScale(1.0f);
 	}
 }
 
@@ -237,44 +280,58 @@ void Character::UpdateMovement()
 {
 	if (bInitialized)
 	{
-		b2Vec2 Velocity = b2Component.Component->GetBody()->GetLinearVelocity();
+		b2Vec2 Velocity = GetPhysicComponent()->GetBody()->GetLinearVelocity();
 
 		// Decay multiplier on individual component.
 		float Vx = Velocity.x * 0.98f;
-		float Vy = Velocity.y; //(Velocity.y >= 0) ? Velocity.y * 0.01f : Velocity.y * 100.0f; // If Vy is positive, reduce 1/4 per tick, or Vy is negative, increase 4/1 per tick.
-
-		// Y speed decay isn't fast enough. Need a very strong value.
-
+	
 		// Gradually accelerate to respective direction.
 		if (bWantToMoveLeft && !bWantToMoveRight)
 			Vx = b2Max(Velocity.x - WALKING_SPEED_DELTA, -WALKING_SPEED_MAX);
 
 		if (!bWantToMoveLeft && bWantToMoveRight) 
 			Vx = b2Min(Velocity.x + WALKING_SPEED_DELTA, +WALKING_SPEED_MAX);
-
-		if (bWantToJump)
-			Vy = Velocity.y + 8.0f; //b2Min(Velocity.y + 16.0f, +16.0f);
-
-		float DeltaVelocityX = Vx - Velocity.x;
-		float DeltaVelocityY = Vy - Velocity.y;
-		float ImpulseX = b2Component.Component->GetBody()->GetMass() * DeltaVelocityX;
-		float ImpulseY = b2Component.Component->GetBody()->GetMass() * DeltaVelocityY;
+		
+		float ImpulseX = GetPhysicComponent()->GetBody()->GetMass() * (Vx - Velocity.x);
 
 		// Allow horizontal movement even if jumping but not dashing.
 		if(!bDash)
-			b2Component.Component->GetBody()->ApplyLinearImpulse(b2Vec2(ImpulseX, 0), b2Component.Component->GetBody()->GetWorldCenter(), true);
+			GetPhysicComponent()->GetBody()->ApplyLinearImpulse(b2Vec2(ImpulseX, 0), GetPhysicComponent()->GetBody()->GetWorldCenter(), true);
 
 		if (bJump && bWantToJump && JumpMaxHoldTimer < JUMP_MAX_HOLD_THRESHOLD_TIME) // continue pumping it if want to jump.
 		{
-			b2Component.Component->GetBody()->ApplyLinearImpulse(b2Vec2(0, -ImpulseY), b2Component.Component->GetBody()->GetWorldCenter(), true);
+			const b2Vec2 CurrentVelocity = GetPhysicComponent()->GetBody()->GetLinearVelocity();
+			const float JumpVelocity = 10.0f; // b2Max(CurrentVelocity.y + 2.0f, 10.0f);
+
+			const b2Vec2 FinalVelocity = b2Vec2(CurrentVelocity.x, b2Max(CurrentVelocity.y - JumpVelocity, -10.0f));
+			GetPhysicComponent()->GetBody()->SetLinearVelocity(FinalVelocity);
+
+			if (!bDash)
+			{
+				// Manipulate falling gravity
+				if (GetPhysicComponent()->GetBody()->GetLinearVelocity().y > 0)
+				{
+					const float Gravity = Application::GetInstance()->GetWorld()->GetGravity().y;
+					const b2Vec2 FallingVelocity = GetPhysicComponent()->GetBody()->GetLinearVelocity() + b2Vec2(0, Gravity * 1.5f * DELTA_TIME_STEP);
+					GetPhysicComponent()->GetBody()->SetLinearVelocity(FallingVelocity);
+				}
+			}
+		}
+		else
+		{
+			if (!bDash)
+			{
+				if (GetPhysicComponent()->GetBody()->GetLinearVelocity().y < 0)
+				{
+					const float Gravity = Application::GetInstance()->GetWorld()->GetGravity().y;
+					const b2Vec2 FallingVelocity = GetPhysicComponent()->GetBody()->GetLinearVelocity() + b2Vec2(0, Gravity * DELTA_TIME_STEP);
+					GetPhysicComponent()->GetBody()->SetLinearVelocity(FallingVelocity);
+				}
+			}
 		}
 
-		bWantToMoveLeft = false;
-		bWantToMoveRight = false;
-		bWantToJump = false;
-			
 		// Debug information
-		b2Vec2 v = b2Component.Component->GetBody()->GetLinearVelocity();
+		b2Vec2 v = GetPhysicComponent()->GetBody()->GetLinearVelocity();
 
 		std::ostringstream ss;
 		ss << std::setprecision(3);
@@ -291,6 +348,10 @@ void Character::UpdateMovement()
 
 		DebugText->SetText(ss.str());
 		DebugText->Text.setPosition(sf::Vector2f(32.0f, 32.0f*2));
+
+		bWantToMoveLeft = false;
+		bWantToMoveRight = false;
+		bWantToJump = false;
 	}
 }
 

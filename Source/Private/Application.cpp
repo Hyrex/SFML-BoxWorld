@@ -278,7 +278,7 @@ void Application::Tick(const float DeltaTime)
 			{
 				if (GameState.IsGameStarted())
 				{
-					GameState.GetPlayer()->DashReleased();
+					GameState.GetPlayer()->DashPressed();
 					bDashPressed = true;
 				}
 
@@ -355,18 +355,11 @@ void Application::Tick(const float DeltaTime)
 	AppWindow.clear(sf::Color::Black);
 
 	for (auto& Itr : Actors)
-		Itr->Draw();
+		Itr.get()->Draw();
 	
-	if (GameState.GetPlayer()->IsInitialized())
-	{
-		AppWindow.draw(*GameState.GetPlayer()->Getb2Component().Component->GetDebugForward());
-		for (int i = 0; i < GameState.GetPlayer()->GetShapeCount(); ++i)
-		{
-			if(sf::Shape* s = GameState.GetPlayer()->GetShapeAtIndex(i))
-				AppWindow.draw(*s);
-		}
-	}
-
+	// Draw Character separately.
+	GameState.GetPlayer()->Draw();
+		
 	FTextManager::GetInstance()->Draw();
 	
 	AppWindow.draw(AngleIndicators, 2, sf::Lines);

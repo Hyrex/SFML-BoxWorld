@@ -27,16 +27,15 @@ void Actor::Tick()
 			//for each of the b2Component, update if component match visual id
 			if (b2Component.b2ID == si.sID)
 			{
-				WorldRotation = b2Component.Component->GetBody()->GetAngle() * 180 / b2_pi;
+				WorldRotation = GetPhysicComponent()->GetBody()->GetAngle() * 180 / b2_pi;
 				si.Shape->setRotation(WorldRotation);
-				WorldLocation.x = UNIT_BOX2D_TO_SFML(b2Component.Component->GetBody()->GetPosition().x);
-				WorldLocation.y = UNIT_BOX2D_TO_SFML(b2Component.Component->GetBody()->GetPosition().y);
+				WorldLocation = UNIT_SFML_VEC(GetPhysicComponent()->GetBody()->GetPosition());
 				si.Shape->setPosition(WorldLocation);
 			}
 		}
 	}
 
-	b2Component.Component->Tick();
+	GetPhysicComponent()->Tick();
 }
 
 void Actor::Draw()
@@ -106,4 +105,9 @@ sf::Shape* Actor::GetShapeAtIndex(const int Index)
 sf::Vector2f Actor::GetWorldLocation() const
 {
 	return WorldLocation;
+}
+
+b2Vec2 Actor::Getb2WorldLocation() const
+{
+	return UNIT_BOX2D_VEC(GetWorldLocation());
 }

@@ -59,9 +59,11 @@ public:
 	int GetID()	const;
 	int GetShapeCount() const { return (int)ObjectShapes.size(); }
 	Fb2ComponentID Getb2Component() { return b2Component; }
+	PhysicComponent* GetPhysicComponent() { return b2Component.Component; }
 	std::string	GetObjectName()	const;
 	sf::Shape*	GetShapeAtIndex(const int Index);
 	sf::Vector2f GetWorldLocation() const;
+	b2Vec2 Getb2WorldLocation() const;
 
 protected:
 	std::string							ObjectName;

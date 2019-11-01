@@ -6,7 +6,7 @@
 class FText;
 
 #define JUMP_BLOCK_INTERVAL				0.15f
-#define JUMP_MAX_HOLD_THRESHOLD_TIME	0.05f
+#define JUMP_MAX_HOLD_THRESHOLD_TIME	0.5f
 
 #define WALKING_SPEED_MAX				7.5f
 #define WALKING_SPEED_DELTA				5.0f
@@ -21,6 +21,7 @@ public:
 	Character(std::string Name, int ID);
 	virtual ~Character();
 	virtual void Tick() override;
+	virtual void Draw() override;
 
 	void Initialize();
 	void MoveLeft();
@@ -66,6 +67,10 @@ private:
 	float DashCoolDownTimer = 0.0f;		// Time required to reuse Dash.
 	float DashExecuteTimer = 0.0f; // Time required Character to fully perform a dash. During this period input are blocked.
 
-	
+	float CharacterScale = 0.75f;
+	sf::Vector2f CharacterSize = UNIT_VECTOR * CharacterScale;
+
+	// Foot RayCast line
+	sf::Vertex FootLine[2];
 };
 

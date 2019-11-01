@@ -20,7 +20,7 @@ void StaticBlockActor::Construct(sf::Vector2f Size, sf::Vector2f Location, const
 	sf::RectangleShape* Rect = new sf::RectangleShape();
 	Rect->setSize(Size);
 	Rect->setOrigin(Size * 0.5f);
-	Rect->setFillColor(sf::Color::Green);
+	Rect->setFillColor(sf::Color(125,125,125,255));
 	Rect->setOutlineThickness(1);
 	Rect->setOutlineColor(sf::Color::Black);
 
@@ -30,12 +30,12 @@ void StaticBlockActor::Construct(sf::Vector2f Size, sf::Vector2f Location, const
 
 	b2BodyDef tBodyDef;
 	tBodyDef.type = b2_staticBody;
-	tBodyDef.position.Set(UNIT_SFML_TO_BOX2D(Location.x), UNIT_SFML_TO_BOX2D(Location.y));
+	tBodyDef.position.Set(UNIT_BOX2D(Location.x), UNIT_BOX2D(Location.y));
 	tBodyDef.userData = (void*)this;
 	b2Component->CreateBody(&tBodyDef);
 
 	b2PolygonShape tFixtureShape;
-	tFixtureShape.SetAsBox(UNIT_SFML_TO_BOX2D(Size.x * 0.5f), UNIT_SFML_TO_BOX2D(Size.y * 0.5f));
+	tFixtureShape.SetAsBox(UNIT_BOX2D(Size.x * 0.5f), UNIT_BOX2D(Size.y * 0.5f));
 
 	b2FixtureDef tFixtureDef;
 	tFixtureDef.shape = &tFixtureShape;
