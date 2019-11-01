@@ -15,8 +15,8 @@ class PhysicComponentContactListener;
 
 struct FRenderWindowData
 {
-	int Width = 1024;
-	int Height = 768;
+	int Width = 1200;
+	int Height = 800;
 	int BitsPerPixel = 32;
 	
 	std::string WindowName = "BoxWorld";

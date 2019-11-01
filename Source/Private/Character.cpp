@@ -109,30 +109,13 @@ void Character::Tick()
 
 	if (bJump)
 	{
-		JumpMaxHoldTimer += DELTA_TIME_STEP;
-		if (JumpMaxHoldTimer >= JUMP_MAX_HOLD_THRESHOLD_TIME)
-			JumpMaxHoldTimer = JUMP_MAX_HOLD_THRESHOLD_TIME;
+		JumpHoldTime += DELTA_TIME_STEP;
 	}
 
-	if (DashCoolDownTimer <= 0.0f && bWantToDash)
+	if (JumpHoldTime >= JUMP_HOLD_MAX_TIME)
 	{
-		bDash = true;
-		DashCoolDownTimer = DASH_COOLDOWN;
-		DashExecuteTimer = DASH_EXECUTE_LOCK;
-
-		// No longer affect by gravity and then cut off original speed.
-		GetPhysicComponent()->GetBody()->SetGravityScale(0.0f);
-		GetPhysicComponent()->GetBody()->SetLinearVelocity(b2Vec2(0, 0));
-
-		float ImpulseX = GetPhysicComponent()->GetBody()->GetMass() * DASH_SPEED;
-		if (LastFaceDirection == EFD_Right)
-		{
-			GetPhysicComponent()->GetBody()->ApplyLinearImpulse(b2Vec2(ImpulseX, 0), GetPhysicComponent()->GetBody()->GetWorldCenter(), true);
-		}
-		else if (LastFaceDirection == EFD_Left)
-		{
-			GetPhysicComponent()->GetBody()->ApplyLinearImpulse(b2Vec2(-ImpulseX, 0), GetPhysicComponent()->GetBody()->GetWorldCenter(), true);
-		}
+		bCanJump = false;
+		JumpHoldTime = JUMP_HOLD_MAX_TIME;
 	}
 
 	if (DashCoolDownTimer > 0.0f)
@@ -141,20 +124,18 @@ void Character::Tick()
 	if (DashExecuteTimer > 0.0f)
 		DashExecuteTimer -= DELTA_TIME_STEP;
 
-	if (DashExecuteTimer < 0.0f)
+	if (DashExecuteTimer <= 0.0f && bDash)
 	{
-		//
 		GetPhysicComponent()->GetBody()->SetGravityScale(1.0f);
+		const b2Vec2 V = GetPhysicComponent()->GetBody()->GetLinearVelocity();
+		GetPhysicComponent()->GetBody()->SetLinearVelocity(b2Vec2(V.x * 0.1f, V.y));
 		bDash = false;
 	}
 
 	UpdateMovement();
 
-	const b2Vec2 CurrentVelocity = GetPhysicComponent()->GetBody()->GetLinearVelocity();
-	if (CurrentVelocity.y == 0.0f)
-		bJump = false;
-
-	// Foot Ray cast
+	
+#if 0 // // Foot Ray cast doesnt work but keep for reference.
 	const float RayLength = 0.25f;
 	b2Vec2 StartLocation(Getb2WorldLocation() + b2Vec2(0, UNIT_BOX2D(CharacterSize.y  * 0.5f)));
 	b2Vec2 EndLocation = StartLocation + b2Vec2(0, (RayLength));
@@ -176,7 +157,7 @@ void Character::Tick()
 		
 		bJump = false;
 	}
-
+#endif
 }
 
 void Character::Draw()
@@ -254,11 +235,14 @@ void Character::JumpPressed()
 {	
 	if (bInitialized)
 	{
-		bWantToJump = (JumpMaxHoldTimer < JUMP_MAX_HOLD_THRESHOLD_TIME);
-
-		if (!bJump && JumpInputTimedOutTimer <= 0.0f)
+		if (!bDash && !bWantToDash)
 		{
-			bJump = true;
+			bWantToJump = true;
+
+			if (!bJump && JumpInputTimedOutTimer <= 0.0f)
+			{
+				bJump = true;
+			}
 		}
 	}
 }
@@ -271,7 +255,7 @@ void Character::JumpReleased()
 
 		if (bJump)
 		{
-			JumpMaxHoldTimer = JUMP_MAX_HOLD_THRESHOLD_TIME;
+			JumpHoldTime = JUMP_HOLD_MAX_TIME;
 		}
 	}
 }
@@ -280,56 +264,85 @@ void Character::UpdateMovement()
 {
 	if (bInitialized)
 	{
-		b2Vec2 Velocity = GetPhysicComponent()->GetBody()->GetLinearVelocity();
-
-		// Decay multiplier on individual component.
-		float Vx = Velocity.x * 0.98f;
-	
-		// Gradually accelerate to respective direction.
-		if (bWantToMoveLeft && !bWantToMoveRight)
-			Vx = b2Max(Velocity.x - WALKING_SPEED_DELTA, -WALKING_SPEED_MAX);
-
-		if (!bWantToMoveLeft && bWantToMoveRight) 
-			Vx = b2Min(Velocity.x + WALKING_SPEED_DELTA, +WALKING_SPEED_MAX);
-		
-		float ImpulseX = GetPhysicComponent()->GetBody()->GetMass() * (Vx - Velocity.x);
-
-		// Allow horizontal movement even if jumping but not dashing.
-		if(!bDash)
-			GetPhysicComponent()->GetBody()->ApplyLinearImpulse(b2Vec2(ImpulseX, 0), GetPhysicComponent()->GetBody()->GetWorldCenter(), true);
-
-		if (bJump && bWantToJump && JumpMaxHoldTimer < JUMP_MAX_HOLD_THRESHOLD_TIME) // continue pumping it if want to jump.
+		// Horizontal Movement
+		if (!bDash)
 		{
-			const b2Vec2 CurrentVelocity = GetPhysicComponent()->GetBody()->GetLinearVelocity();
-			const float JumpVelocity = 10.0f; // b2Max(CurrentVelocity.y + 2.0f, 10.0f);
+			// Decay multiplier on individual component.
+			const b2Vec2 Velocity = GetPhysicComponent()->GetBody()->GetLinearVelocity();
+			float Vx = Velocity.x * 0.98f;
 
-			const b2Vec2 FinalVelocity = b2Vec2(CurrentVelocity.x, b2Max(CurrentVelocity.y - JumpVelocity, -10.0f));
-			GetPhysicComponent()->GetBody()->SetLinearVelocity(FinalVelocity);
+			// Gradually accelerate to respective direction.
+			if (bWantToMoveLeft && !bWantToMoveRight)
+				Vx = b2Max(Velocity.x - WALKING_SPEED_DELTA, -WALKING_SPEED_MAX);
 
-			if (!bDash)
+			if (!bWantToMoveLeft && bWantToMoveRight)
+				Vx = b2Min(Velocity.x + WALKING_SPEED_DELTA, +WALKING_SPEED_MAX);
+
+			const float ImpulseX = GetPhysicComponent()->GetBody()->GetMass() * (Vx - Velocity.x);
+			GetPhysicComponent()->GetBody()->ApplyLinearImpulse(b2Vec2(ImpulseX, 0), GetPhysicComponent()->GetBody()->GetWorldCenter(), true);
+		}
+
+		const bool bExecuteDash = bWantToDash && bCanDash;
+		if (bExecuteDash && DashCoolDownTimer <= 0.0f)
+		{
+			bDash = true;
+			DashCoolDownTimer = DASH_COOLDOWN;
+			DashExecuteTimer = DASH_EXECUTE_LOCK;
+
+			// No longer affect by gravity and then cut off original speed.
+			GetPhysicComponent()->GetBody()->SetGravityScale(0.0f);
+			GetPhysicComponent()->GetBody()->SetLinearVelocity(b2Vec2(0, 0));
+
+			float ImpulseX = GetPhysicComponent()->GetBody()->GetMass() * DASH_SPEED;
+			if (LastFaceDirection == EFD_Right)
 			{
-				// Manipulate falling gravity
-				if (GetPhysicComponent()->GetBody()->GetLinearVelocity().y > 0)
-				{
-					const float Gravity = Application::GetInstance()->GetWorld()->GetGravity().y;
-					const b2Vec2 FallingVelocity = GetPhysicComponent()->GetBody()->GetLinearVelocity() + b2Vec2(0, Gravity * 1.5f * DELTA_TIME_STEP);
-					GetPhysicComponent()->GetBody()->SetLinearVelocity(FallingVelocity);
-				}
+				GetPhysicComponent()->GetBody()->ApplyLinearImpulse(b2Vec2(ImpulseX, 0), GetPhysicComponent()->GetBody()->GetWorldCenter(), true);
+			}
+			else if (LastFaceDirection == EFD_Left)
+			{
+				GetPhysicComponent()->GetBody()->ApplyLinearImpulse(b2Vec2(-ImpulseX, 0), GetPhysicComponent()->GetBody()->GetWorldCenter(), true);
+			}
+
+			// If Dash was execute on jumping, then you can no longer dash until you landed.
+			if (bJump)
+			{
+				bCanDash = false;
 			}
 		}
-		else
+
+		// Vertical Component
+		bCanJump = JumpHoldTime < JUMP_HOLD_MAX_TIME;
+
+		if (bWantToJump && bCanJump) // continue pumping it if want to jump.
 		{
 			if (!bDash)
 			{
+				bJump = true;
+				const b2Vec2 CurrentVelocity = GetPhysicComponent()->GetBody()->GetLinearVelocity();
+				const float JumpVelocity = JUMP_VELOCITY; 
+
+				const b2Vec2 FinalVelocity = b2Vec2(CurrentVelocity.x, b2Max(CurrentVelocity.y - JumpVelocity, -JUMP_VELOCITY));
+				GetPhysicComponent()->GetBody()->SetLinearVelocity(FinalVelocity);
+
 				if (GetPhysicComponent()->GetBody()->GetLinearVelocity().y < 0)
 				{
 					const float Gravity = Application::GetInstance()->GetWorld()->GetGravity().y;
-					const b2Vec2 FallingVelocity = GetPhysicComponent()->GetBody()->GetLinearVelocity() + b2Vec2(0, Gravity * DELTA_TIME_STEP);
+					const b2Vec2 FallingVelocity = GetPhysicComponent()->GetBody()->GetLinearVelocity() + b2Vec2(0, Gravity * 1.25f * DELTA_TIME_STEP);
 					GetPhysicComponent()->GetBody()->SetLinearVelocity(FallingVelocity);
 				}
 			}
 		}
+		else if (!bCanJump)
+		{
+			if (!bDash && GetPhysicComponent()->GetBody()->GetLinearVelocity().y > 0)
+			{
+				const float Gravity = Application::GetInstance()->GetWorld()->GetGravity().y;
+				const b2Vec2 FallingVelocity = GetPhysicComponent()->GetBody()->GetLinearVelocity() + b2Vec2(0, Gravity * 2 * DELTA_TIME_STEP);
+				GetPhysicComponent()->GetBody()->SetLinearVelocity(FallingVelocity);
+			}
+		}
 
+#if DEBUG_GAME
 		// Debug information
 		b2Vec2 v = GetPhysicComponent()->GetBody()->GetLinearVelocity();
 
@@ -338,20 +351,24 @@ void Character::UpdateMovement()
 		ss << std::fixed;
 		ss << "Vx = " << v.x << "\nVy = " << v.y;
 		ss << "\nWantJump=" << (bWantToJump ? "Yes" : "No");
+		ss << "\nCanJump=" << (bCanJump ? "Yes" : "No");
 		ss << "\nJumpState="<< (bJump ? "Jumping" : "NotJumping");
-		ss << "\nJumpHoldTime=" << JumpMaxHoldTimer;
+		ss << "\nJumpHoldTime=" << JumpHoldTime;
 		ss << "\nWantGrab=" << (bWantToGrab ? "Yes" : "No");
 		ss << "\nGrabState=" << (bGrab ? "Grabbed" : "NotGrabbed");
 		ss << "\nWantDash=" << (bWantToDash ? "Yes" : "No");
+		ss << "\nCanDash=" << (bCanDash ? "Yes" : "No");
+		ss << "\nDashState=" << (bDash ? "Dashing" : "NotDashing");
 		ss << "\nDashCoolDown=" << DashCoolDownTimer;
-		ss << "\nFacingDirection=" << (LastFaceDirection == EFaceDirection::EFD_Right) ? "Right" : "Left";
+		ss << "\nFacingDirection=" << ((LastFaceDirection == EFaceDirection::EFD_Right) ? "Right" : "Left");
 
 		DebugText->SetText(ss.str());
 		DebugText->Text.setPosition(sf::Vector2f(32.0f, 32.0f*2));
+#endif
 
 		bWantToMoveLeft = false;
 		bWantToMoveRight = false;
-		bWantToJump = false;
+
 	}
 }
 
@@ -375,8 +392,10 @@ void Character::BeginOverlap(PhysicComponent* Component, PhysicComponent* Overla
 			if (!pCharacter) return;
 			
 			pCharacter->bJump = false;
+			pCharacter->bCanDash = true;
+			pCharacter->bWantToJump = false;
 			pCharacter->JumpInputTimedOutTimer = JUMP_BLOCK_INTERVAL;
-			pCharacter->JumpMaxHoldTimer = 0.0f;
+			pCharacter->JumpHoldTime = 0.0f;
 		}
 
 		if ((int)UserDataB == GAMETAG_STATIC_WALL)
@@ -412,7 +431,7 @@ void Character::BeginOverlap(PhysicComponent* Component, PhysicComponent* Overla
 		}
 
 		pCharacter->OverlapDataText->SetText(ss.str());
-		pCharacter->OverlapDataText->Text.setPosition(sf::Vector2f(32.0f, 32.0f * 8));
+		pCharacter->OverlapDataText->Text.setPosition(sf::Vector2f(32.0f, 32.0f * 15));
 	}
 }
 

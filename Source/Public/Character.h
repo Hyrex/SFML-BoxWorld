@@ -5,14 +5,15 @@
 
 class FText;
 
+#define JUMP_VELOCITY					16.0f
 #define JUMP_BLOCK_INTERVAL				0.15f
-#define JUMP_MAX_HOLD_THRESHOLD_TIME	0.5f
+#define JUMP_HOLD_MAX_TIME				0.35f
 
 #define WALKING_SPEED_MAX				7.5f
-#define WALKING_SPEED_DELTA				5.0f
-#define DASH_SPEED						20.0f
-#define DASH_COOLDOWN					0.5f
-#define DASH_EXECUTE_LOCK				0.15f
+#define WALKING_SPEED_DELTA				3.2f
+#define DASH_SPEED						27.5f
+#define DASH_COOLDOWN					0.75f
+#define DASH_EXECUTE_LOCK				0.125f
 
 class Character : public Actor
 {
@@ -45,14 +46,16 @@ public:
 	std::unique_ptr<FText> DebugText = std::make_unique<FText>();
 	std::unique_ptr<FText> OverlapDataText = std::make_unique<FText>();
 #endif
-
 private:
+
 	// Request pending flags
 	bool bWantToMoveLeft = false;
 	bool bWantToMoveRight = false;
 	bool bWantToJump = false;
 	bool bWantToGrab = false;
 	bool bWantToDash = false;
+	bool bCanDash = true;
+	bool bCanJump = false;
 
 	// Actual states
 	bool bDash = false;
@@ -61,11 +64,11 @@ private:
 	bool bInitialized = false;
 	
 	// Timed out actions.
-	float JumpMaxHoldTimer = 0.0f;
+	float JumpHoldTime = 0.0f;
 	float JumpInputTimedOutTimer = 10.0f;
 
 	float DashCoolDownTimer = 0.0f;		// Time required to reuse Dash.
-	float DashExecuteTimer = 0.0f; // Time required Character to fully perform a dash. During this period input are blocked.
+	float DashExecuteTimer = 0.0f; // Time required Character to fully perform a dash. During this gravity are ignored.
 
 	float CharacterScale = 0.75f;
 	sf::Vector2f CharacterSize = UNIT_VECTOR * CharacterScale;

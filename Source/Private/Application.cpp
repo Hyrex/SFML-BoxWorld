@@ -15,7 +15,7 @@ Application::Application()
 {
 	ContactListener = std::make_unique<PhysicComponentContactListener>();
 
-	Gravity = b2Vec2(0.f, 30.0f);
+	Gravity = b2Vec2(0.f, 64.0f);
 	World = std::make_shared<b2World>(Gravity);
 	World->SetContactListener(ContactListener.get());
 }
@@ -197,8 +197,11 @@ void Application::Tick(const float DeltaTime)
 		{
 			if (GameState.IsGameStarted())
 			{
-				GameState.GetPlayer()->JumpPressed();
-				bJumpPressed = true;
+				if (!bJumpPressed)
+				{
+					GameState.GetPlayer()->JumpPressed();
+					bJumpPressed = true;
+				}
 			}
 			else
 			{
@@ -213,8 +216,11 @@ void Application::Tick(const float DeltaTime)
 			{
 				if (GameState.IsGameStarted())
 				{
-					GameState.GetPlayer()->JumpPressed();
-					bJumpPressed = true;
+					if (!bJumpPressed)
+					{
+						GameState.GetPlayer()->JumpPressed();
+						bJumpPressed = true;
+					}
 				}
 				else
 				{
@@ -274,7 +280,7 @@ void Application::Tick(const float DeltaTime)
 		}
 		else
 		{
-			if (sf::Joystick::isButtonPressed(0, PS4_RightTriggerAxis))
+			if (sf::Joystick::isButtonPressed(0, PS4_RightTrigger))
 			{
 				if (GameState.IsGameStarted())
 				{
